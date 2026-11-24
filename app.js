@@ -36,11 +36,11 @@ var DEEPSEEK_MODEL = PROVEDORES.deepseek.modelo;
 var MARITACA_MODEL = PROVEDORES.maritaca.modelo;
 
 // Um acesso só, completo: o que muda é só a duração da assinatura.
-// Todas as durações têm os mesmos recursos e o mesmo limite de 60 planos/mês.
+// Todas as durações têm os mesmos recursos e o mesmo limite de 100 planos/mês.
 var PLANOS = {
-  mensal:     { nome: 'Mensal', limite: 60, preco: 'R$ 29,90/mês' },
-  trimestral: { nome: 'Trimestral', limite: 60, preco: 'R$ 74,90 a cada 3 meses' },
-  anual:      { nome: 'Anual', limite: 60, preco: 'R$ 299,00/ano' },
+  mensal:     { nome: 'Mensal', limite: 100, preco: 'R$ 29,90/mês' },
+  trimestral: { nome: 'Trimestral', limite: 100, preco: 'R$ 74,90 a cada 3 meses' },
+  anual:      { nome: 'Anual', limite: 100, preco: 'R$ 299,00/ano' },
 };
 
 var CHAVE_MES = 'brittech_mvp_uso_' + new Date().toISOString().slice(0, 7); // ex.: brittech_mvp_uso_2026-11
@@ -433,7 +433,7 @@ function atualizarContador() {
   var aviso = $('aviso-limite');
   if (usados >= lim) {
     aviso.hidden = false;
-    aviso.innerHTML = '<strong>Limite atingido (' + lim + ' planos neste mês).</strong> Todas as durações (Mensal, Trimestral e Anual) têm o mesmo acesso e o mesmo limite de 60 planos por mês. O limite renova no próximo mês.';
+    aviso.innerHTML = '<strong>Limite atingido (' + lim + ' planos neste mês).</strong> Todas as durações (Mensal, Trimestral e Anual) têm o mesmo acesso e o mesmo limite de 100 planos por mês. O limite renova no próximo mês.';
   } else { aviso.hidden = true; aviso.textContent = ''; }
 }
 function trocarPlano(novo) {
@@ -449,7 +449,7 @@ $('form-plano').addEventListener('submit', async function (ev) {
   var lim = limiteAtual();
   if (usados >= lim) {
     atualizarContador();
-    avisar('Limite atingido (' + lim + ' planos neste mês). O limite renova no próximo mês — todas as durações têm o mesmo limite de 60 planos por mês.');
+    avisar('Limite atingido (' + lim + ' planos neste mês). O limite renova no próximo mês — todas as durações têm o mesmo limite de 100 planos por mês.');
     return;
   }
   var dados = { etapaNome: c.etapaNome, etapa: c.etapa, componente: c.nome, sigla: c.sigla, ano: anoSel.value, habilidade: h, tema: $('tema').value.trim(), duracao: $('duracao').value, turma: $('turma').value.trim() };
