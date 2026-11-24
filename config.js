@@ -28,4 +28,12 @@ window.BRITTECH_CONFIG = {
   // API direta: a chave fica só no servidor, nunca neste navegador, e o
   // bloqueio CORS some. Deixe '' para usar a chamada direta (modo antigo).
   proxyUrl: '',         // ex.: 'https://brittech-proxy.onrender.com'
+  // Client ID do Google (OAuth 2.0) para a integração com o Google Drive
+  // (ver CONFIG.md, seção "Google Drive"). Termina em
+  // '.apps.googleusercontent.com'. O Client ID identifica o app no Google
+  // e NÃO é segredo — mesmo assim, só coloque aqui o Client ID criado por
+  // você no Google Cloud Console; nunca invente um valor. Deixe '' para
+  // configurar pelo campo na aba "Planos e IA" (o valor fica salvo só no
+  // seu navegador).
+  googleClientId: '',   // ex.: '123456789012-abcdefgh.apps.googleusercontent.com'
 };

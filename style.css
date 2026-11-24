@@ -36,6 +36,8 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .btn-imprimir{background:var(--limao);color:#12212B}
 .btn-secundario{background:var(--petroleo);color:#fff}
 .acoes-plano,.acoes-doc,.acoes-ia{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.drive-item{display:block;border:1px solid var(--borda,#d7dee8);border-radius:10px;padding:10px 12px;margin:8px 0;cursor:pointer}
+.drive-item input{margin-right:8px}
 .acoes-plano .btn-gerar{margin-top:0}
 .hero-mascote{display:flex;align-items:center;gap:18px}
 .hero-mascote img{flex:none}
@@ -155,3 +157,20 @@ footer{text-align:center;color:var(--cinza);font-size:13px;padding:10px}
   @page{size:landscape}
   .slide-impresso .slide{border:1px solid #999}
 }
+
+/* ============ ASSISTENTE BRITO (agente.js) + GOOGLE (google.js) ============ */
+.chat-agente{border:1px solid var(--borda);border-radius:12px;padding:14px;max-height:320px;overflow-y:auto;background:var(--fundo)}
+.msg-agente{border-radius:12px;padding:10px 14px;margin-bottom:10px;max-width:85%;white-space:pre-wrap}
+.msg-brito{background:#E0F2F7;color:var(--petroleo);margin-right:auto}
+.msg-voce{background:var(--petroleo);color:#fff;margin-left:auto}
+.form-agente{display:flex;gap:10px;margin-top:12px}
+.form-agente input{flex:1}
+.form-agente .btn-gerar{margin-top:0}
+.acoes-agente{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.acoes-agente .btn-secundario{margin-top:0}
+#agente-resultado{border-top:2px solid var(--borda);margin-top:20px;padding-top:16px}
+.tabela-agente{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+.tabela-agente th,.tabela-agente td{border:1px solid var(--borda);padding:8px;text-align:left;vertical-align:top}
+.tabela-agente th{background:#E0F2F7;color:var(--petroleo)}
+.google-ok{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;padding:10px 12px}
+.google-off{background:#FFF7E6;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px}

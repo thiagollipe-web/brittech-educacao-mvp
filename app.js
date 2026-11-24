@@ -326,13 +326,16 @@ async function gerarPlanoComIA(dados) {
   var prov = provedorAtual();
   if (modoIA() === 'demo') {
     // Sem chave: modelo local + aviso claro de modo demonstração.
-    return { html: montarPlano(dados) + '<p><em>Plano gerado em modo demonstração, sem IA real. Para ligar a IA real, escolha um provedor (Gemini, DeepSeek ou Maritaca) e configure sua chave na aba “Planos e IA” — veja CONFIG.md.</em></p>', fonte: 'demo' };
+    var avisoDemo = '<p><em>Plano gerado em modo demonstração, sem IA real. Para ligar a IA real, escolha um provedor (Gemini, DeepSeek ou Maritaca) e configure sua chave na aba “Planos e IA” — veja CONFIG.md.</em></p>';
+    if (obterContextoDrive()) avisoDemo += '<p><em>Você selecionou material do Google Drive, mas ele só é usado quando a IA real está ativa — o modelo local de demonstração não lê o material.</em></p>';
+    return { html: montarPlano(dados) + avisoDemo, fonte: 'demo' };
   }
   var prompt = 'Escreva um plano de aula completo e prático, em português, alinhado à BNCC.\n' +
     'Etapa: ' + dados.etapaNome + '\nComponente: ' + dados.componente + '\nAno/série: ' + dados.ano + '\n' +
     'Habilidade BNCC: ' + dados.habilidade.codigo + ' — ' + dados.habilidade.descricao + '\n' +
     'Tema: ' + dados.tema + '\nDuração: ' + dados.duracao + ' minutos\nTurma/observações: ' + (dados.turma || 'não informada') + '\n\n' +
-    'Responda em HTML simples, com as seções: 1. Objetivos; 2. Habilidade BNCC; 3. Desenvolvimento com tempos em minutos; 4. Atividades; 5. Avaliação; 6. Recursos; 7. Adaptações. Seja concreto.';
+    'Responda em HTML simples, com as seções: 1. Objetivos; 2. Habilidade BNCC; 3. Desenvolvimento com tempos em minutos; 4. Atividades; 5. Avaliação; 6. Recursos; 7. Adaptações. Seja concreto.' +
+    obterContextoDrive();
   try {
     var texto = await chamarIA(prompt, PROMPT_SISTEMA_PLANO);
     var html = texto.replace(/```html|```/g, '');
@@ -353,7 +356,7 @@ async function melhorarDocumentoComIA(tipo, textoOriginal) {
   var nomes = { relatorio: 'relatório de turma', ata: 'ata de reunião', ficha: 'ficha de avaliação', parecer: 'parecer descritivo' };
   var prompt = 'Você é um assistente de documentação escolar brasileiro. Reescreva o ' + (nomes[tipo] || 'documento') + ' abaixo em português claro e profissional, adequado à escola pública brasileira. ' +
     'Mantenha TODOS os fatos (turma, período, datas, tema, componente, habilidade BNCC ' + (ultimoPlano ? ultimoPlano.habilidade.codigo : '') + ') exatamente como estão — não invente nomes, datas, números nem fatos novos. ' +
-    'Apenas melhore a redação, a organização e a clareza. Devolva somente o texto do documento, em texto puro (sem HTML, sem markdown).\n\n---\n' + textoOriginal;
+    'Apenas melhore a redação, a organização e a clareza. Devolva somente o texto do documento, em texto puro (sem HTML, sem markdown).\n\n---\n' + textoOriginal + obterContextoDrive();
   try {
     var texto = await chamarIA(prompt, 'Você é um assistente de documentação escolar brasileiro. Responda sempre em português, em texto puro.');
     return texto.replace(/```/g, '').trim();
@@ -416,6 +419,271 @@ function atualizarCamposIA() {
     desc.textContent = textos[provedorId] || '';
   }
   atualizarModoIA();
+}
+
+// ---------------------------------------------------------------- Google Drive do professor
+// A IA usa os materiais do professor (apostilas, planejamentos, textos)
+// como referência de estilo e de conteúdo ao escrever o plano e as
+// documentações. Como funciona:
+//   - Login via Google Identity Services (OAuth 2.0, token client), escopo
+//     drive.readonly (só leitura: nada é alterado nem apagado no Drive).
+//   - O token de acesso fica SÓ na memória desta aba do navegador — nunca
+//     é salvo em arquivo, nunca vai para o localStorage e nunca é enviado
+//     ao proxy (o proxy só recebe o prompt já montado, com o texto dos
+//     materiais selecionados).
+//   - O Client ID (OAuth) vem de config.js (googleClientId) ou do campo na
+//     aba "Planos e IA" (salvo no localStorage). Sem Client ID, a seção
+//     mostra as instruções e não quebra nada. O Client ID NÃO é segredo
+//     (ele identifica o app no Google), mas nunca invente um: veja
+//     CONFIG.md, seção "Google Drive", para criar o seu.
+//   - Leitura de arquivos: Google Docs (export para texto) e TXT (download)
+//     são legíveis no navegador. PDF e DOCX aparecem na lista, mas o
+//     navegador não extrai o texto deles sem uma biblioteca própria —
+//     nesses casos o MVP avisa claramente, sem fingir que leu.
+// Para criar o Client ID: ver CONFIG.md, seção "Google Drive".
+var DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
+var DRIVE_GSI_URL = 'https://accounts.google.com/gsi/client';
+var DRIVE_API = 'https://www.googleapis.com/drive/v3';
+var CHAVE_GOOGLE_CLIENT_ID = 'brittech_mvp_google_client_id';
+var DRIVE_LIMITE_CARACTERES = 12000; // teto do material enviado à IA por geração
+var DRIVE_TIPOS = {
+  'application/vnd.google-apps.document': { nome: 'Google Docs', legivel: true },
+  'text/plain': { nome: 'Texto (.txt)', legivel: true },
+  'application/pdf': { nome: 'PDF', legivel: false, motivo: 'PDF é um arquivo binário e o navegador não extrai o texto dele sem uma biblioteca própria. Para usar este material, abra-o no Google Docs (Arquivo > Abrir com > Documentos Google) ou salve uma cópia como .txt.' },
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { nome: 'Word (.docx)', legivel: false, motivo: 'DOCX é um arquivo compactado e o navegador não lê o texto dele sem uma biblioteca própria. Para usar este material, abra-o no Google Docs (Arquivo > Abrir com > Documentos Google) ou salve uma cópia como .txt.' },
+};
+function driveTipoInfo(mimeType) {
+  return DRIVE_TIPOS[mimeType] || { nome: 'Outro formato', legivel: false, motivo: 'Este formato não é lido pelo MVP — use Google Docs ou .txt para o material que a IA deve usar como referência.' };
+}
+var driveToken = null; // SÓ em memória — some ao fechar a aba
+var driveTokenExpiraEm = 0;
+var driveConectado = false;
+var driveArquivos = []; // última lista do Drive {id, name, mimeType, modifiedTime}
+var driveSelecionados = {}; // id -> {id, nome, mimeType, texto}
+var driveGISCarregado = false;
+var driveGISCarregando = null;
+var driveTokenClient = null;
+
+function obterGoogleClientId() {
+  var porArquivo = (window.BRITTECH_CONFIG && window.BRITTECH_CONFIG.googleClientId) || '';
+  var porNavegador = localStorage.getItem(CHAVE_GOOGLE_CLIENT_ID) || '';
+  return (porNavegador || porArquivo || '').trim();
+}
+function driveTokenValido() {
+  return driveConectado && driveToken && Date.now() < driveTokenExpiraEm;
+}
+function carregarGIS() {
+  if (driveGISCarregado) return Promise.resolve();
+  if (driveGISCarregando) return driveGISCarregando;
+  driveGISCarregando = new Promise(function (resolve, reject) {
+    var s = document.createElement('script');
+    s.src = DRIVE_GSI_URL;
+    s.async = true;
+    s.defer = true;
+    s.onload = function () { driveGISCarregado = true; resolve(); };
+    s.onerror = function () { driveGISCarregando = null; reject(new Error('Não foi possível carregar a biblioteca de login do Google (accounts.google.com/gsi/client). Verifique a internet e tente de novo.')); };
+    document.head.appendChild(s);
+  });
+  return driveGISCarregando;
+}
+async function driveConectar() {
+  var clientId = obterGoogleClientId();
+  if (!clientId) {
+    avisar('Para conectar o Google Drive, primeiro configure o Client ID do Google: cole-o no campo acima (seção “Google Drive”) e clique em “Salvar Client ID”. O passo a passo para criar o Client ID está em CONFIG.md, seção “Google Drive”.');
+    return false;
+  }
+  if (!/\.apps\.googleusercontent\.com$/.test(clientId)) {
+    avisar('Esse Client ID não parece válido: ele deve terminar em “.apps.googleusercontent.com”. Confira o valor copiado do Google Cloud Console.');
+    return false;
+  }
+  try {
+    await carregarGIS();
+  } catch (err) {
+    avisar('Google Drive: ' + err.message);
+    return false;
+  }
+  if (!window.google || !google.accounts || !google.accounts.oauth2) {
+    avisar('Google Drive: a biblioteca de login do Google não carregou. Recarregue a página e tente de novo.');
+    return false;
+  }
+  return new Promise(function (resolve) {
+    driveTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: DRIVE_SCOPE,
+      callback: function (resp) {
+        if (!resp || resp.error || !resp.access_token) {
+          avisar('Google Drive: login não concluído (' + (resp && resp.error ? resp.error : 'sem token') + '). Tente de novo — nada foi acessado.');
+          resolve(false);
+          return;
+        }
+        driveToken = resp.access_token;
+        driveTokenExpiraEm = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
+        driveConectado = true;
+        atualizarStatusDrive();
+        avisar('Google Drive conectado (só leitura). Busque seus arquivos abaixo e selecione os que a IA deve usar como referência.');
+        driveListarArquivos('').then(function () { resolve(true); }, function () { resolve(true); });
+      },
+      error_callback: function (err) {
+        avisar('Google Drive: erro no login (' + (err && (err.type || err.error) ? (err.type || err.error) : 'desconhecido') + '). Verifique o Client ID e a origem autorizada no Google Cloud Console (CONFIG.md).');
+        resolve(false);
+      },
+    });
+    try {
+      driveTokenClient.requestAccessToken({ prompt: 'consent' });
+    } catch (err) {
+      avisar('Google Drive: não foi possível abrir o login do Google (' + err.message + ').');
+      resolve(false);
+    }
+  });
+}
+function driveDesconectar() {
+  var token = driveToken;
+  driveToken = null;
+  driveTokenExpiraEm = 0;
+  driveConectado = false;
+  driveArquivos = [];
+  driveSelecionados = {};
+  if (token && window.google && google.accounts && google.accounts.oauth2 && google.accounts.oauth2.revoke) {
+    try { google.accounts.oauth2.revoke(token, function () { /* token revogado no Google */ }); } catch (e) { /* revogação é melhor esforço */ }
+  }
+  atualizarStatusDrive();
+  renderizarListaDrive();
+  atualizarResumoDrive();
+  avisar('Google Drive desconectado. O token foi revogado e o material selecionado foi limpo.');
+}
+async function driveChamarAPI(caminho) {
+  if (!driveTokenValido()) {
+    driveConectado = false; driveToken = null;
+    atualizarStatusDrive();
+    throw new Error('Sessão do Google Drive expirou ou não está conectada — clique em “Conectar Google Drive” novamente.');
+  }
+  var resp = await fetch(DRIVE_API + caminho, { headers: { 'Authorization': 'Bearer ' + driveToken } });
+  if (resp.status === 401) {
+    driveConectado = false; driveToken = null;
+    atualizarStatusDrive();
+    throw new Error('O Google recusou o token (HTTP 401) — conecte o Google Drive novamente.');
+  }
+  if (!resp.ok) throw new Error('Google Drive respondeu HTTP ' + resp.status + '.');
+  return resp;
+}
+// Lista Docs, PDF, TXT e DOCX do Drive (não lixeira). Busca por nome, se informada.
+async function driveListarArquivos(busca) {
+  if (!driveTokenValido()) throw new Error('Conecte o Google Drive antes de buscar arquivos.');
+  var tipos = Object.keys(DRIVE_TIPOS).map(function (m) { return "mimeType='" + m + "'"; }).join(' or ');
+  var q = "trashed=false and (" + tipos + ")";
+  var termo = (busca || '').trim().replace(/'/g, "\\'");
+  if (termo) q += " and name contains '" + termo + "'";
+  var url = '/files?q=' + encodeURIComponent(q) + '&fields=' + encodeURIComponent('files(id,name,mimeType,modifiedTime)') + '&pageSize=50&orderBy=modifiedTime desc';
+  var resp = await driveChamarAPI(url);
+  var json = await resp.json();
+  driveArquivos = (json && json.files) || [];
+  renderizarListaDrive();
+  return driveArquivos;
+}
+// Lê o texto de um arquivo: Docs via export, TXT via download. PDF/DOCX não
+// são legíveis no navegador — devolve {legivel:false, motivo} sem fingir.
+async function driveLerArquivo(arquivo) {
+  var info = driveTipoInfo(arquivo.mimeType);
+  if (!info.legivel) return { legivel: false, motivo: info.motivo, texto: '' };
+  var resp;
+  if (arquivo.mimeType === 'application/vnd.google-apps.document') {
+    resp = await driveChamarAPI('/files/' + encodeURIComponent(arquivo.id) + '/export?mimeType=' + encodeURIComponent('text/plain'));
+  } else {
+    resp = await driveChamarAPI('/files/' + encodeURIComponent(arquivo.id) + '?alt=media');
+  }
+  var texto = await resp.text();
+  return { legivel: true, motivo: '', texto: texto || '' };
+}
+async function driveAlternarArquivo(id, marcado) {
+  var arquivo = null;
+  for (var i = 0; i < driveArquivos.length; i++) { if (driveArquivos[i].id === id) { arquivo = driveArquivos[i]; break; } }
+  if (!arquivo) return;
+  if (!marcado) { delete driveSelecionados[id]; atualizarResumoDrive(); return; }
+  var info = driveTipoInfo(arquivo.mimeType);
+  if (!info.legivel) {
+    avisar('“' + arquivo.nome + '” (' + info.nome + ') não pode ser lido pelo navegador. ' + info.motivo);
+    var cb = document.querySelector('input[data-drive-arquivo="' + id + '"]');
+    if (cb) cb.checked = false;
+    return;
+  }
+  var sel = document.querySelector('input[data-drive-arquivo="' + id + '"]');
+  if (sel) sel.disabled = true;
+  try {
+    var lido = await driveLerArquivo(arquivo);
+    if (!lido.legivel) { avisar('Não foi possível ler “' + arquivo.nome + '”: ' + lido.motivo); if (sel) { sel.checked = false; sel.disabled = false; } return; }
+    if (!lido.texto.trim()) { avisar('“' + arquivo.nome + '” está vazio — nada para a IA usar como referência.'); if (sel) { sel.checked = false; sel.disabled = false; } return; }
+    driveSelecionados[id] = { id: id, nome: arquivo.name, mimeType: arquivo.mimeType, texto: lido.texto };
+    atualizarResumoDrive();
+  } catch (err) {
+    avisar('Não foi possível ler “' + arquivo.nome + '” do Drive (' + err.message + ').');
+    if (sel) sel.checked = false;
+  } finally {
+    if (sel) sel.disabled = false;
+  }
+}
+// Bloco de contexto enviado à IA junto com o prompt do plano/documento.
+// Vazio quando nada foi selecionado. Corta em DRIVE_LIMITE_CARACTERES e avisa.
+function obterContextoDrive() {
+  var ids = Object.keys(driveSelecionados);
+  if (!ids.length) return '';
+  var partes = [];
+  var total = 0;
+  for (var i = 0; i < ids.length; i++) {
+    var a = driveSelecionados[ids[i]];
+    if (!a.texto) continue;
+    var texto = a.texto;
+    if (total + texto.length > DRIVE_LIMITE_CARACTERES) {
+      texto = texto.slice(0, Math.max(0, DRIVE_LIMITE_CARACTERES - total)) + '\n[...trecho cortado: o material era maior que o limite de ' + DRIVE_LIMITE_CARACTERES + ' caracteres enviados à IA...]';
+    }
+    partes.push('--- Material do professor: ' + a.nome + ' ---\n' + texto);
+    total += texto.length;
+    if (total >= DRIVE_LIMITE_CARACTERES) break;
+  }
+  if (!partes.length) return '';
+  return '\n\nMATERIAL DO PROFESSOR (do Google Drive dele — use como referência de estilo e de conteúdo; siga o vocabulário, a estrutura e os exemplos dele, sem inventar nada além do que está aqui):\n' + partes.join('\n\n');
+}
+function atualizarStatusDrive() {
+  var st = $('status-drive');
+  if (!st) return;
+  var clientId = obterGoogleClientId();
+  if (!driveConectado) {
+    st.textContent = clientId
+      ? 'Google Drive: não conectado. Client ID configurado — clique em “Conectar Google Drive” e autorize o acesso de leitura.'
+      : 'Google Drive: não conectado. Configure o Client ID do Google no campo abaixo (passo a passo em CONFIG.md, seção “Google Drive”).';
+  } else {
+    st.textContent = 'Google Drive: conectado (só leitura — nada é alterado no seu Drive). O acesso expira em cerca de 1 hora; depois é só conectar de novo.';
+  }
+  var campo = $('drive-client-id');
+  if (campo && !campo.value) campo.value = clientId;
+  var btnCon = $('btn-conectar-drive'), btnDes = $('btn-desconectar-drive'), area = $('area-drive');
+  if (btnCon) btnCon.hidden = driveConectado;
+  if (btnDes) btnDes.hidden = !driveConectado;
+  if (area) area.hidden = !driveConectado;
+}
+function renderizarListaDrive() {
+  var el = $('lista-drive');
+  if (!el) return;
+  if (!driveArquivos.length) { el.innerHTML = '<p class="dica">Nenhum arquivo encontrado (Docs, PDF, TXT ou DOCX). Tente outra busca — ou verifique se o arquivo está no Drive da conta que você conectou.</p>'; return; }
+  el.innerHTML = driveArquivos.map(function (a) {
+    var info = driveTipoInfo(a.mimeType);
+    var sel = !!driveSelecionados[a.id];
+    var data = a.modifiedTime ? ' — modificado em ' + a.modifiedTime.slice(0, 10).split('-').reverse().join('/') : '';
+    return '<label class="drive-item"><input type="checkbox" data-drive-arquivo="' + esc(a.id) + '"' + (sel ? ' checked' : '') + '> <strong>' + esc(a.name) + '</strong> <span class="tag">' + esc(info.nome) + '</span>' +
+      (info.legivel ? '<span class="tag">legível pela IA</span>' : '<span class="tag confirmar">não legível aqui</span>') +
+      '<br><span class="dica">' + esc(data) + (info.legivel ? '' : ' ' + esc(info.motivo)) + '</span></label>';
+  }).join('');
+  el.querySelectorAll('input[data-drive-arquivo]').forEach(function (cb) {
+    cb.addEventListener('change', function () { driveAlternarArquivo(cb.dataset.driveArquivo, cb.checked); });
+  });
+}
+function atualizarResumoDrive() {
+  var el = $('resumo-drive');
+  if (!el) return;
+  var ids = Object.keys(driveSelecionados);
+  if (!ids.length) { el.textContent = 'Nenhum arquivo selecionado. Selecione arquivos acima para a IA usar como referência.'; return; }
+  var total = 0;
+  var nomes = ids.map(function (id) { var a = driveSelecionados[id]; total += (a.texto || '').length; return a.nome; });
+  el.textContent = ids.length + ' arquivo(s) selecionado(s) (' + total.toLocaleString('pt-BR') + ' caracteres' + (total > DRIVE_LIMITE_CARACTERES ? ' — acima do limite de ' + DRIVE_LIMITE_CARACTERES + ', será cortado' : '') + '): ' + nomes.join('; ') + '. A IA vai usar esse material como referência no próximo plano ou documento.';
 }
 
 // ---------------------------------------------------------------- Planos e limite
@@ -686,7 +954,7 @@ $('busca').addEventListener('input', function (ev) { renderCatalogo(ev.target.va
 // ---------------------------------------------------------------- Abas
 function trocarAba(nome) {
   document.querySelectorAll('.aba').forEach(function (b) { b.classList.toggle('ativa', b.dataset.aba === nome); });
-  ['gerador', 'docs', 'catalogo', 'slides', 'planos'].forEach(function (n) { $('aba-' + n).hidden = n !== nome; });
+  ['gerador', 'docs', 'catalogo', 'slides', 'assistente', 'planos'].forEach(function (n) { $('aba-' + n).hidden = n !== nome; });
 }
 document.querySelectorAll('.aba').forEach(function (b) {
   b.addEventListener('click', function () { trocarAba(b.dataset.aba); });
@@ -745,7 +1013,57 @@ $('btn-testar-ia').addEventListener('click', async function () {
   }
 });
 
+// ---------------------------------------------------------------- Google Drive (UI)
+$('btn-salvar-drive-client-id').addEventListener('click', function () {
+  var v = ($('drive-client-id').value || '').trim();
+  if (!v) { avisar('Cole o Client ID do Google (termina em .apps.googleusercontent.com) antes de salvar. Veja CONFIG.md, seção “Google Drive”.'); return; }
+  if (!/\.apps\.googleusercontent\.com$/.test(v)) { avisar('Esse Client ID não parece válido: ele deve terminar em “.apps.googleusercontent.com”. Confira o valor copiado do Google Cloud Console.'); return; }
+  localStorage.setItem(CHAVE_GOOGLE_CLIENT_ID, v);
+  atualizarStatusDrive();
+  avisar('Client ID do Google salvo neste navegador. Agora clique em “Conectar Google Drive” e autorize o acesso de leitura.');
+});
+$('btn-conectar-drive').addEventListener('click', function () { driveConectar(); });
+$('btn-desconectar-drive').addEventListener('click', function () { driveDesconectar(); });
+$('btn-buscar-drive').addEventListener('click', async function () {
+  var termo = $('drive-busca').value || '';
+  $('lista-drive').innerHTML = '<p class="dica">Buscando no Drive…</p>';
+  try {
+    var achados = await driveListarArquivos(termo);
+    if (!achados.length) avisar('Nenhum arquivo (Docs, PDF, TXT ou DOCX) encontrado no Drive' + (termo.trim() ? ' para “' + termo.trim() + '”' : '') + '.');
+  } catch (err) {
+    $('lista-drive').innerHTML = '';
+    avisar('Não foi possível buscar no Drive (' + err.message + ').');
+  }
+});
+
 // ---------------------------------------------------------------- Formulário: encadeamento
+// Normaliza um valor de etapa vindo da URL ("Adaptar com IA") para o slug
+// da opção do select. Aceita o slug, o nome da etapa ou apelidos comuns
+// ("Fundamental 1", "Anos Iniciais", "Ensino Médio"...). Devolve '' quando
+// não reconhece — nesse caso o select fica vazio em vez de fingir que
+// preencheu.
+function normalizarTextoEtapa(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+function resolverEtapa(v) {
+  if (!v) return '';
+  var i, norm = normalizarTextoEtapa(v);
+  for (i = 0; i < etapaSel.options.length; i++) { if (etapaSel.options[i].value === v) return etapaSel.options[i].value; }
+  var apelidos = {
+    'fundamental 1': 'fundamental-anos-iniciais', 'fundamental i': 'fundamental-anos-iniciais',
+    'anos iniciais': 'fundamental-anos-iniciais', 'fundamental anos iniciais': 'fundamental-anos-iniciais',
+    'fundamental 2': 'fundamental-anos-finais', 'fundamental ii': 'fundamental-anos-finais',
+    'anos finais': 'fundamental-anos-finais', 'fundamental anos finais': 'fundamental-anos-finais',
+    'infantil': 'educacao-infantil', 'educacao infantil': 'educacao-infantil',
+    'medio': 'ensino-medio', 'ensino medio': 'ensino-medio',
+  };
+  if (apelidos[norm]) return apelidos[norm];
+  for (i = 0; i < etapaSel.options.length; i++) {
+    var op = etapaSel.options[i];
+    if (op.value && normalizarTextoEtapa(op.value) === norm) return op.value;
+    if (op.textContent && normalizarTextoEtapa(op.textContent) === norm) return op.value;
+  }
+  return '';
+}
+
 preencher(etapaSel, BNCC_DATA.etapas.map(function (e) { return { value: e.id, label: e.nome }; }), 'Escolha a etapa');
 etapaSel.addEventListener('change', atualizarComponentes);
 compSel.addEventListener('change', atualizarAnos);
@@ -755,6 +1073,7 @@ $('filtro-habilidade').addEventListener('input', atualizarHabilidades);
 renderCatalogo('');
 atualizarContador();
 atualizarCamposIA();
+atualizarStatusDrive();
 setBrito('saudacao');
 
 // ---------------------------------------------------------------- Ganchos p/ testes automatizados (não afetam o uso normal)
@@ -769,9 +1088,13 @@ window.__brittech = {
   setChave: function (p, k) { if (CHAVES_IA[p]) { localStorage.setItem(CHAVES_IA[p], k); atualizarModoIA(); } },
   setDelay: function (ms) { DEMO_DELAY_MS = ms; },
   // Preenche o formulário por valores e envia. Ex.: {etapa:'ensino-medio', componente:'Matemática e suas Tecnologias', ano:'1ª série', habilidade:'EM13MAT101', tema:'...', duracao:'50'}
+  // A etapa aceita o slug (ex.: 'fundamental-anos-iniciais'), o nome da
+  // etapa ou apelidos comuns (ex.: 'Fundamental 1', 'Anos Iniciais').
+  // Retorna true quando a etapa foi reconhecida, false caso contrário.
   preencherFormulario: function (d) {
-    etapaSel.value = d.etapa; atualizarComponentes();
-    var lista = ENTRADAS.filter(function (x) { return x.etapa === d.etapa; });
+    var etapaResolvida = resolverEtapa(d.etapa);
+    etapaSel.value = etapaResolvida; atualizarComponentes();
+    var lista = ENTRADAS.filter(function (x) { return x.etapa === etapaResolvida; });
     for (var i = 0; i < lista.length; i++) { if (lista[i].nome === d.componente) { compSel.value = String(i); break; } }
     atualizarAnos();
     anoSel.value = d.ano; atualizarHabilidades();
@@ -781,6 +1104,7 @@ window.__brittech = {
     $('tema').value = d.tema || 'Tema de teste';
     if (d.duracao) $('duracao').value = d.duracao;
     if (d.turma) $('turma').value = d.turma;
+    return !!etapaResolvida;
   },
   submeterFormulario: function () { $('form-plano').dispatchEvent(new Event('submit', { cancelable: true })); },
   gerarDocumentos: gerarDocumentos,
@@ -789,4 +1113,45 @@ window.__brittech = {
   chamarIA: chamarIA,
   modoIA: modoIA,
   provedorAtual: provedorAtual,
+  // Ganchos do Google Drive (para testes automatizados).
+  drive: {
+    getState: function () { return { conectado: driveConectado, temClientId: !!obterGoogleClientId(), arquivos: driveArquivos.length, selecionados: Object.keys(driveSelecionados).length, contextoChars: obterContextoDrive().length, tokenNaMemoria: !!driveToken }; },
+    setClientId: function (id) { localStorage.setItem(CHAVE_GOOGLE_CLIENT_ID, id); atualizarStatusDrive(); },
+    setToken: function (t) { driveToken = t; driveTokenExpiraEm = Date.now() + 3600000; driveConectado = !!t; atualizarStatusDrive(); },
+    classificar: driveTipoInfo,
+    simularArquivo: function (id, nome, mime, texto) { driveSelecionados[id] = { id: id, nome: nome, mimeType: mime, texto: texto }; atualizarResumoDrive(); },
+    limparSelecao: function () { driveSelecionados = {}; atualizarResumoDrive(); },
+    contexto: obterContextoDrive,
+    listar: driveListarArquivos,
+    ler: driveLerArquivo,
+    desconectar: driveDesconectar,
+    tokenEmLocalStorage: function () { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (/token/i.test(k) && /drive/i.test(k)) return k; } return null; },
+  },
 };
+
+// ---------------------------------------------------------------- "Adaptar com IA" (biblioteca gratuita de aulas)
+// Pré-preenche o formulário a partir de parâmetros na URL, ex.:
+//   ?etapa=fundamental-anos-finais&componente=Ciências&ano=6º ano&habilidade=EF06CI01&tema=Misturas...&duracao=50
+// Usado pelo botão "Adaptar com IA" de cada aula da biblioteca gratuita.
+// Não envia nada para lugar nenhum: só preenche o formulário local.
+(function adaptarComIAViaUrl() {
+  try {
+    var q = new URLSearchParams(window.location.search);
+    var etapa = q.get('etapa'), componente = q.get('componente'), habilidade = q.get('habilidade');
+    if (!etapa || !componente || !habilidade) return;
+    var ok = window.__brittech.preencherFormulario({
+      etapa: etapa,
+      componente: componente,
+      ano: q.get('ano') || '',
+      habilidade: habilidade,
+      tema: q.get('tema') || '',
+      duracao: q.get('duracao') || '50',
+      turma: q.get('turma') || '',
+    });
+    if (ok) {
+      avisar('Aula carregada da biblioteca gratuita — revise os dados e clique em “Gerar plano de aula” para adaptar com IA.');
+    } else {
+      avisar('Não reconheci a etapa “' + etapa + '” do link da biblioteca — escolha a etapa no formulário e gere o plano normalmente.');
+    }
+  } catch (e) { /* sem pré-preenchimento: o MVP abre normalmente */ }
+})();

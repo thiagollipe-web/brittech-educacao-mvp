@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Brittech Educação — Planejador de aulas com IA (MVP)</title>
 <meta name="description" content="Brittech Educação: planejador de aulas alinhado à BNCC, da Educação Infantil ao Ensino Médio. Sua aula pronta, do planejamento à prática.">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -26,6 +27,7 @@
     <button type="button" class="aba" data-aba="docs">2. Documentações</button>
     <button type="button" class="aba" data-aba="catalogo">Catálogo BNCC</button>
     <button type="button" class="aba" data-aba="slides">Slides da aula</button>
+    <button type="button" class="aba" data-aba="assistente">Assistente (Brito)</button>
     <button type="button" class="aba" data-aba="planos">Planos e IA</button>
   </nav>
 </header>
@@ -209,6 +211,39 @@
     </div>
   </section>
 
+  <!-- ============ ABA: ASSISTENTE (BRITO) ============ -->
+  <section id="aba-assistente" class="painel-aba" hidden>
+    <h2>Assistente Brito — documentos e planilhas</h2>
+    <p>Peça em linguagem natural o que você precisa — um documento ou uma planilha — e o Brito monta para você. Ele pergunta o que falta (turma, datas, nomes, disciplina) e depois entrega o resultado editável, para baixar em <strong>.docx</strong> ou <strong>.xlsx</strong> ou salvar no seu <strong>Google Drive</strong>.</p>
+    <p class="dica" data-google-status>Google não configurado.</p>
+    <div id="agente-chat" class="chat-agente" aria-live="polite">
+      <div class="msg-agente msg-brito">Oi! Eu sou o Brito, seu assistente. Peça um documento ou uma planilha em linguagem natural — por exemplo: “faz uma ata da reunião de pais” ou “monta uma planilha de notas do 6º ano”.</div>
+    </div>
+    <form id="agente-form" class="form-agente">
+      <input type="text" id="agente-entrada" placeholder="Ex.: faz uma ata da reunião de pais do 6º ano B" autocomplete="off" aria-label="Mensagem para o assistente Brito">
+      <button class="btn-gerar" type="submit" id="agente-enviar">Enviar</button>
+    </form>
+    <div class="acoes-agente">
+      <button class="btn-secundario" type="button" data-exemplo-agente="faz uma ata da reunião de pais do 6º ano B">Ata da reunião de pais</button>
+      <button class="btn-secundario" type="button" data-exemplo-agente="monta uma planilha de notas do 6º ano B de Matemática">Planilha de notas do 6º ano</button>
+      <button class="btn-secundario" type="button" data-exemplo-agente="cria um planejamento anual de Ciências do 6º ano">Planejamento anual de Ciências</button>
+      <button class="btn-secundario" type="button" id="agente-novo">Nova conversa</button>
+    </div>
+
+    <div id="agente-resultado" hidden>
+      <h3 id="agente-resultado-titulo"></h3>
+      <p class="modo" id="agente-aviso-modo"></p>
+      <textarea id="agente-texto" rows="14" aria-label="Texto do documento gerado pelo assistente"></textarea>
+      <div id="agente-tabela" hidden></div>
+      <div class="acoes-doc">
+        <button class="btn-secundario" type="button" id="agente-copiar">Copiar</button>
+        <button class="btn-gerar" type="button" id="agente-baixar">Baixar .docx</button>
+        <button class="btn-secundario" type="button" id="agente-google">Salvar como Google Doc</button>
+      </div>
+      <p class="dica" id="agente-status-google"></p>
+    </div>
+  </section>
+
   <!-- ============ ABA: CATÁLOGO ============ -->
   <section id="aba-catalogo" class="painel-aba" hidden>
     <h2>Catálogo BNCC</h2>
@@ -232,7 +267,7 @@
           <li>Documentações (relatório, ata, ficha e parecer)</li>
           <li>Slides de aula até 33 (PPT e PDF)</li>
           <li>Banco de materiais e atividades</li>
-          <li>Gemini com acesso ao seu Google Drive <span class="tag em-breve">em breve</span></li>
+          <li>IA com acesso ao seu Google Drive</li>
         </ul>
         <button class="btn-plano" type="button" data-plano="mensal">Usar Mensal</button>
       </div>
@@ -243,7 +278,7 @@
           <li><strong>100 planos de aula por mês</strong></li>
           <li>Tudo do Mensal, por 3 meses (≈ R$ 24,97/mês)</li>
           <li>Documentações, slides até 33 e banco de materiais</li>
-          <li>Gemini com acesso ao seu Google Drive <span class="tag em-breve">em breve</span></li>
+          <li>IA com acesso ao seu Google Drive</li>
         </ul>
         <button class="btn-plano" type="button" data-plano="trimestral">Usar Trimestral</button>
       </div>
@@ -254,12 +289,12 @@
           <li><strong>100 planos de aula por mês</strong></li>
           <li>Tudo do Mensal, por 12 meses (≈ R$ 24,92/mês)</li>
           <li>Documentações, slides até 33 e banco de materiais</li>
-          <li>Gemini com acesso ao seu Google Drive <span class="tag em-breve">em breve</span></li>
+          <li>IA com acesso ao seu Google Drive</li>
         </ul>
         <button class="btn-plano" type="button" data-plano="anual">Usar Anual</button>
       </div>
     </div>
-    <p class="dica">“Gemini com acesso ao seu Google Drive” está marcado como <strong>em breve</strong>: ainda não foi implementado. Não é possível usá-lo neste MVP — a integração (login Google + permissão de leitura do Drive) será feita numa próxima etapa.</p>
+    <p class="dica">“IA com acesso ao seu Google Drive” está disponível em todas as durações: conecte o Drive na seção abaixo (precisa do Client ID do Google — passo a passo em CONFIG.md, seção “Google Drive”) e selecione os materiais que a IA deve usar como referência ao escrever o plano e as documentações.</p>
 
     <h2>Inteligência artificial real — escolha o provedor</h2>
     <p>Sem chave, o MVP funciona em <strong>modo demonstração</strong>, montando o plano e as documentações a partir de modelos por componente. Com a chave de um provedor, o plano <strong>e</strong> as documentações passam a ser escritos sob medida pela IA. A chave fica só no seu navegador — nunca é enviada para nós nem salva em nenhum arquivo. Instruções completas no arquivo <code>CONFIG.md</code> desta pasta.</p>
@@ -287,10 +322,52 @@
     <p class="dica" id="status-ia">Status da IA: modo demonstração, sem IA real.</p>
     <h3>Chaves configuradas</h3>
     <ul id="status-provedores"></ul>
+
+    <h2>Google Drive do professor</h2>
+    <p>Conecte o seu Google Drive para a IA usar os seus materiais (apostilas, planejamentos, textos) como referência ao escrever o plano e as documentações — no seu estilo e com o seu conteúdo. A conexão é só de <strong>leitura</strong>: nada é alterado nem apagado no seu Drive. O token de acesso fica só nesta aba do navegador e some quando você fecha a página — ele nunca é salvo em arquivo nem enviado ao proxy.</p>
+    <p class="dica" id="status-drive">Google Drive: não conectado.</p>
+    <label for="drive-client-id">Client ID do Google (OAuth — só precisa configurar uma vez)</label>
+    <input type="text" id="drive-client-id" placeholder="Ex.: 123456789012-abcdefgh…apps.googleusercontent.com" autocomplete="off">
+    <div class="acoes-ia">
+      <button class="btn-secundario" type="button" id="btn-salvar-drive-client-id">Salvar Client ID</button>
+      <button class="btn-gerar" type="button" id="btn-conectar-drive">Conectar Google Drive</button>
+      <button class="btn-secundario" type="button" id="btn-desconectar-drive" hidden>Desconectar</button>
+    </div>
+    <p class="dica">Sem Client ID? Veja o passo a passo em CONFIG.md, seção “Google Drive” — é gratuito e leva poucos minutos no Google Cloud Console.</p>
+    <div id="area-drive" hidden>
+      <label for="drive-busca">Buscar arquivos no Drive</label>
+      <input type="search" id="drive-busca" placeholder="Ex.: apostila, planejamento, misturas">
+      <div class="acoes-ia">
+        <button class="btn-secundario" type="button" id="btn-buscar-drive">Buscar no Drive</button>
+      </div>
+      <p class="dica">São listados Google Docs, PDF, TXT e DOCX. Dá para ler aqui dentro só Google Docs e TXT — PDF e DOCX aparecem na lista, mas o navegador não consegue extrair o texto deles (o aviso aparece em cada arquivo).</p>
+      <div id="lista-drive"></div>
+      <h3>Material selecionado para a IA</h3>
+      <p class="dica" id="resumo-drive">Nenhum arquivo selecionado. Selecione arquivos acima para a IA usar como referência.</p>
+    </div>
+
+    <h2>Salvar no Drive — documentos e planilhas do assistente</h2>
+    <p>O assistente Brito (aba “Assistente”) gera documentos e planilhas — aqui você conecta o Google para <strong>salvar</strong> o que ele gerar direto no seu Drive, como Google Doc e Google Planilha. Usa o <strong>mesmo Client ID</strong> da seção “Google Drive do professor” acima (o mesmo login serve para ler materiais e para salvar arquivos — são duas permissões separadas, pedidas em dois cliques). O token de acesso fica só na sessão do navegador (some ao fechar a aba) — nunca vai para arquivo nenhum.</p>
+    <p class="dica" data-google-status>Google não configurado.</p>
+    <p class="dica" id="google-conta"></p>
+    <div class="acoes-ia">
+      <button class="btn-gerar" type="button" data-google-conectar>Conectar com o Google</button>
+      <button class="btn-secundario" type="button" data-google-desconectar hidden>Desconectar do Google</button>
+    </div>
+    <div id="google-instrucao" class="aviso" hidden>
+      <strong>Para conectar o Google, crie o OAuth Client ID (é grátis, leva uns 10 minutos):</strong>
+      <ol>
+        <li>Abra <strong>https://console.cloud.google.com/</strong> e crie ou escolha um projeto.</li>
+        <li>Em <strong>APIs e serviços → Biblioteca</strong>, ative: <strong>Google Drive API</strong>, <strong>Google Docs API</strong> e <strong>Google Sheets API</strong>.</li>
+        <li>Em <strong>APIs e serviços → Credenciais</strong>, crie um <strong>ID do cliente OAuth</strong> do tipo <strong>Aplicativo da Web</strong> e cadastre a origem do MVP em <strong>Origens JavaScript autorizadas</strong> (ex.: a URL do GitHub Pages onde o MVP está publicado).</li>
+        <li>Copie o Client ID (termina em <code>.apps.googleusercontent.com</code>), cole no campo “Client ID do Google” da seção “Google Drive do professor” acima e clique em <strong>Salvar Client ID</strong> — depois clique em <strong>Conectar com o Google</strong>.</li>
+      </ol>
+      <p class="dica">Detalhes, escopos e o que cada permissão faz: ver <code>CONFIG.md</code>, seção 5. Atenção: o login Google só funciona com o MVP servido por HTTPS (ex.: GitHub Pages) — abrindo o arquivo direto do computador (file://), o Google recusa o login.</p>
+    </div>
   </section>
 </main>
 
-<footer>Brittech Educação — MVP • Catálogo BNCC v1.0 • Assinaturas na Kiwify: Mensal R$ 29,90/mês e Anual R$ 299/ano cadastrados; Trimestral R$ 74,90 a cadastrar na Kiwify (checkout a criar). Um acesso só, completo. Este MVP não altera nada na cobrança.</footer>
+<footer>Brittech Educação — MVP • Catálogo BNCC v1.0 • Assinaturas na Kiwify: Mensal R$ 29,90/mês, Trimestral R$ 74,90/3 meses (<a href="https://pay.kiwify.com.br/QrSvkxs">https://pay.kiwify.com.br/QrSvkxs</a>) e Anual R$ 299/ano cadastrados. Um acesso só, completo. Este MVP não altera nada na cobrança.</footer>
 
 <!-- Área usada só na impressão de um documento ou do plano -->
 <div id="area-impressao" aria-hidden="true"></div>
@@ -299,5 +376,7 @@
 <script src="config.js"></script>
 <script src="app.js"></script>
 <script src="slides.js"></script>
+<script src="google.js"></script>
+<script src="agente.js"></script>
 </body>
 </html>
