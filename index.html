@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brittech Educação — Planejador de aulas com IA (MVP)</title>
+<meta name="description" content="Brittech Educação: planejador de aulas alinhado à BNCC, da Educação Infantil ao Ensino Médio. Sua aula pronta, do planejamento à prática.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="topo">
+    <img src="assets/logo.svg" alt="Brittech Educação">
+    <div>
+      <h1>Brittech Educação</h1>
+      <p>Sua aula pronta, do planejamento à prática</p>
+    </div>
+    <div class="plano-atual" id="plano-atual">
+      <strong id="plano-nome">Plano: Mensal</strong><br>
+      <span id="contador">0 de 60 planos usados neste mês</span>
+      <div class="barra-uso"><div id="barra-uso-preenchimento"></div></div>
+    </div>
+  </div>
+  <nav class="abas" aria-label="Seções do planejador">
+    <button type="button" class="aba ativa" data-aba="gerador">1. Gerador de plano</button>
+    <button type="button" class="aba" data-aba="docs">2. Documentações</button>
+    <button type="button" class="aba" data-aba="catalogo">Catálogo BNCC</button>
+    <button type="button" class="aba" data-aba="slides">Slides da aula</button>
+    <button type="button" class="aba" data-aba="planos">Planos e IA</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ HERO / BRITO ============ -->
+  <section class="hero-mascote" id="hero-brito">
+    <img id="brito-img" src="assets/brito-saudacao.svg" alt="Brito, mascote do Brittech Educação, acenando" width="160" height="160">
+    <div>
+      <h2 id="brito-titulo">Oi, eu sou o Brito!</h2>
+      <p id="brito-fala">Seu ajudante de planejamento. Escolha a etapa, o componente da BNCC e o tema — eu monto o plano de aula para você, do planejamento à prática.</p>
+      <p class="modo" id="modo-ia"><strong>Modo demonstração, sem IA real.</strong> Os planos são montados a partir de modelos por componente. Para ligar a IA real, escolha um provedor (Gemini, DeepSeek ou Maritaca) e configure sua chave na aba “Planos e IA” — veja o arquivo CONFIG.md.</p>
+    </div>
+  </section>
+
+  <!-- Mensagens (substituem alertas: não travam a página) -->
+  <div id="mensagem" class="mensagem" hidden role="status"></div>
+
+  <!-- ============ ABA: GERADOR ============ -->
+  <section id="aba-gerador" class="painel-aba">
+    <h2>Monte seu plano de aula</h2>
+    <form id="form-plano">
+      <div class="grid">
+        <div>
+          <label for="etapa">Etapa</label>
+          <select id="etapa" required></select>
+        </div>
+        <div>
+          <label for="componente">Componente / Área</label>
+          <select id="componente" required></select>
+        </div>
+        <div>
+          <label for="ano">Ano / Série</label>
+          <select id="ano" required></select>
+        </div>
+        <div>
+          <label for="duracao">Duração</label>
+          <select id="duracao">
+            <option value="50">50 minutos (1 aula)</option>
+            <option value="100">100 minutos (2 aulas)</option>
+            <option value="150">150 minutos (3 aulas)</option>
+          </select>
+        </div>
+      </div>
+      <label for="filtro-habilidade">Filtrar habilidade (opcional — por código ou palavra)</label>
+      <input type="search" id="filtro-habilidade" placeholder="Ex.: EF01LP01, leitura, soma, EM13…">
+      <label for="habilidade">Habilidade BNCC</label>
+      <select id="habilidade" required></select>
+      <p class="dica" id="aviso-habilidade" hidden></p>
+      <div class="grid">
+        <div>
+          <label for="tema">Tema da aula</label>
+          <input type="text" id="tema" placeholder="Ex.: Leitura de contos, Adição com reagrupamento, Misturas" required>
+        </div>
+        <div>
+          <label for="turma">Turma / observações (opcional)</label>
+          <input type="text" id="turma" placeholder="Ex.: 2º ano B, 28 alunos, 2 alunos com apoio">
+        </div>
+      </div>
+      <button class="btn-gerar" type="submit" id="btn-gerar">Gerar plano de aula</button>
+      <p class="aviso-limite" id="aviso-limite" hidden></p>
+    </form>
+
+    <div id="secao-resultado" hidden>
+      <h2>Seu plano de aula</h2>
+      <div class="plano" id="resultado"></div>
+      <div class="acoes-plano">
+        <button class="btn-secundario" type="button" id="btn-copiar-plano">Copiar plano</button>
+        <button class="btn-imprimir" type="button" id="btn-imprimir-plano">Imprimir / salvar em PDF</button>
+        <button class="btn-gerar" type="button" id="btn-ir-docs">Gerar documentações deste plano →</button>
+        <button class="btn-secundario" type="button" id="btn-ir-slides">Gerar slides desta aula →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABA: DOCUMENTAÇÕES ============ -->
+  <section id="aba-docs" class="painel-aba" hidden>
+    <h2>Documentações da turma</h2>
+    <p>A partir do último plano gerado, o Brito prepara os documentos que a escola pede. Revise o texto em cada caixa, copie ou imprima — cada documento tem os três botões. <strong>Com a IA real ativa</strong> (aba “Planos e IA”), o botão “Gerar as 4 documentações” já manda a IA reescrever cada documento — e o botão “Melhorar com IA” de cada documento reescreve só aquele.</p>
+    <div id="docs-sem-plano" class="aviso">
+      <strong>Nenhum plano gerado ainda nesta sessão.</strong> Gere um plano na aba “Gerador de plano” e volte aqui — ou use os botões abaixo para preencher com um tema de exemplo.
+      <br><button class="btn-secundario" type="button" id="btn-exemplo-docs">Usar plano de exemplo</button>
+    </div>
+    <div class="grid-docs">
+      <div>
+        <label for="doc-turma">Turma / aluno(a)</label>
+        <input type="text" id="doc-turma" placeholder="Ex.: 2º ano B — ou nome do(a) aluno(a) para o parecer">
+      </div>
+      <div>
+        <label for="doc-periodo">Período</label>
+        <input type="text" id="doc-periodo" placeholder="Ex.: 1º bimestre de 2026">
+      </div>
+      <div>
+        <label for="doc-data">Data</label>
+        <input type="text" id="doc-data" placeholder="Ex.: 24/11/2026">
+      </div>
+      <div>
+        <label for="doc-professor">Professor(a)</label>
+        <input type="text" id="doc-professor" placeholder="Ex.: Thiago Fillipe Soares">
+      </div>
+    </div>
+    <button class="btn-gerar" type="button" id="btn-gerar-docs">Gerar as 4 documentações</button>
+
+    <div id="lista-docs">
+      <article class="doc" id="doc-relatorio">
+        <h3>Relatório de turma</h3>
+        <p class="doc-desc">Resumo do trabalho da turma no período: o que foi ensinado, como a turma respondeu e os próximos passos.</p>
+        <textarea id="txt-relatorio" rows="12" aria-label="Texto do relatório de turma"></textarea>
+        <div class="acoes-doc">
+          <button class="btn-secundario" type="button" data-copiar="txt-relatorio">Copiar</button>
+          <button class="btn-secundario" type="button" data-melhorar="relatorio">Melhorar com IA</button>
+          <button class="btn-imprimir" type="button" data-imprimir="relatorio">Imprimir / salvar em PDF</button>
+        </div>
+      </article>
+      <article class="doc" id="doc-ata">
+        <h3>Ata de reunião</h3>
+        <p class="doc-desc">Registro formal de reunião (conselho de classe, reunião de pais ou de equipe): pauta, presentes e encaminhamentos.</p>
+        <textarea id="txt-ata" rows="12" aria-label="Texto da ata de reunião"></textarea>
+        <div class="acoes-doc">
+          <button class="btn-secundario" type="button" data-copiar="txt-ata">Copiar</button>
+          <button class="btn-secundario" type="button" data-melhorar="ata">Melhorar com IA</button>
+          <button class="btn-imprimir" type="button" data-imprimir="ata">Imprimir / salvar em PDF</button>
+        </div>
+      </article>
+      <article class="doc" id="doc-ficha">
+        <h3>Ficha de avaliação</h3>
+        <p class="doc-desc">Critérios observáveis ligados à habilidade BNCC do plano, com níveis (ainda não / em desenvolvimento / atingido).</p>
+        <textarea id="txt-ficha" rows="12" aria-label="Texto da ficha de avaliação"></textarea>
+        <div class="acoes-doc">
+          <button class="btn-secundario" type="button" data-copiar="txt-ficha">Copiar</button>
+          <button class="btn-secundario" type="button" data-melhorar="ficha">Melhorar com IA</button>
+          <button class="btn-imprimir" type="button" data-imprimir="ficha">Imprimir / salvar em PDF</button>
+        </div>
+      </article>
+      <article class="doc" id="doc-parecer">
+        <h3>Parecer descritivo</h3>
+        <p class="doc-desc">Texto individual sobre o(a) aluno(a): avanços, dificuldades e orientações — sem nota, só descrição do percurso.</p>
+        <textarea id="txt-parecer" rows="12" aria-label="Texto do parecer descritivo"></textarea>
+        <div class="acoes-doc">
+          <button class="btn-secundario" type="button" data-copiar="txt-parecer">Copiar</button>
+          <button class="btn-secundario" type="button" data-melhorar="parecer">Melhorar com IA</button>
+          <button class="btn-imprimir" type="button" data-imprimir="parecer">Imprimir / salvar em PDF</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ ABA: SLIDES ============ -->
+  <section id="aba-slides" class="painel-aba" hidden>
+    <h2>Slides da aula</h2>
+    <p>No estilo de apresentação gerada por IA (tipo Gemini Notebook): cada slide tem um <strong>título curto e forte, pouco texto</strong> (frases curtas e pontos-chave, não parágrafos), <strong>um elemento visual</strong> (diagrama, quadro, linha do tempo, comparação ou destaque numerado) e <strong>notas do apresentador</strong> — o que o professor fala em cada slide. Cada slide de conteúdo traz uma <strong>ilustração original</strong> em SVG, feita no estilo da marca (nunca foto de banco de imagem, nunca foto de menor de idade). Nos slides não aparece o mascote Brito: a única marca é a marca d'água discreta “Brittech Educação” no canto inferior direito, além da paleta e da tipografia. Quando pedir, o MVP entrega em <strong>PPT (.pptx)</strong> ou em <strong>PDF</strong> (um slide por página).</p>
+    <div id="slides-sem-plano" class="aviso">
+      <strong>Nenhum plano gerado ainda nesta sessão.</strong> Gere um plano na aba “Gerador de plano” e volte aqui — ou use o botão de exemplo abaixo.
+      <br><button class="btn-secundario" type="button" id="btn-exemplo-slides">Usar plano de exemplo</button>
+    </div>
+    <div class="acoes-slides">
+      <label for="qtd-slides">Quantidade de slides:</label>
+      <input type="number" id="qtd-slides" min="6" max="33" step="1" value="8">
+      <span class="dica">De 6 a 33 slides por apresentação. Padrão: 8.</span>
+      <button class="btn-gerar" type="button" id="btn-gerar-slides">Gerar slides deste plano →</button>
+    </div>
+
+    <div id="area-slides" hidden>
+      <div class="palco-slides" id="palco-slides" aria-label="Apresentação de slides"></div>
+      <div class="slides-nav">
+        <button class="btn-secundario" type="button" id="btn-slide-anterior">← Anterior</button>
+        <span id="contador-slides">Slide 1 de 8</span>
+        <button class="btn-secundario" type="button" id="btn-slide-proximo">Próximo →</button>
+        <button class="btn-secundario" type="button" id="btn-slide-tela-cheia">Tela cheia</button>
+        <button class="btn-secundario" type="button" id="btn-slide-notas">Mostrar notas</button>
+      </div>
+      <div id="notas-slide" class="notas-slide" hidden>
+        <h3>Notas do apresentador</h3>
+        <p id="texto-notas-slide"></p>
+      </div>
+      <div class="acoes-slides">
+        <button class="btn-gerar" type="button" id="btn-baixar-ppt">Baixar PPT (.pptx)</button>
+        <button class="btn-imprimir" type="button" id="btn-baixar-pdf">Baixar PDF</button>
+      </div>
+      <p class="dica" id="status-slides"></p>
+    </div>
+  </section>
+
+  <!-- ============ ABA: CATÁLOGO ============ -->
+  <section id="aba-catalogo" class="painel-aba" hidden>
+    <h2>Catálogo BNCC</h2>
+    <p>Toda a BNCC do catálogo: Educação Infantil (5 campos de experiência), Fundamental Anos Iniciais e Finais (9 componentes) e Ensino Médio (4 áreas). Busque por código, componente ou palavra. Habilidades marcadas <span class="tag confirmar">a confirmar</span> seguem o padrão de codificação da BNCC, mas a descrição ainda precisa ser conferida no texto oficial.</p>
+    <input type="search" id="busca" placeholder="Buscar... Ex.: EF01LP01, Matemática, leitura, EM13" aria-label="Buscar no catálogo BNCC">
+    <p class="dica" id="busca-contagem"></p>
+    <div id="catalogo"></div>
+  </section>
+
+  <!-- ============ ABA: PLANOS E IA ============ -->
+  <section id="aba-planos" class="painel-aba" hidden>
+    <h2>Planos de assinatura</h2>
+    <p><strong>Um acesso só, completo:</strong> o que muda é só a duração da assinatura — mensal, trimestral ou anual. Todas as durações incluem os mesmos recursos e o mesmo limite de 60 planos por mês. O contador no topo mostra quantos planos você já gerou neste mês; ao atingir o limite, a geração é pausada até o próximo mês.</p>
+    <div class="planos">
+      <div class="cartao-plano" data-plano-card="mensal">
+        <h3>Mensal</h3>
+        <p class="preco">R$ 29,90<span class="preco-sufixo">/mês</span></p>
+        <ul>
+          <li><strong>60 planos de aula por mês</strong></li>
+          <li>Todas as etapas e componentes da BNCC</li>
+          <li>Documentações (relatório, ata, ficha e parecer)</li>
+          <li>Slides de aula até 33 (PPT e PDF)</li>
+          <li>Banco de materiais e atividades</li>
+          <li>Gemini com acesso ao seu Google Drive <span class="tag em-breve">em breve</span></li>
+        </ul>
+        <button class="btn-plano" type="button" data-plano="mensal">Usar Mensal</button>
+      </div>
+      <div class="cartao-plano" data-plano-card="trimestral">
+        <h3>Trimestral</h3>
+        <p class="preco">R$ 74,90<span class="preco-sufixo">/3 meses</span></p>
+        <ul>
+          <li><strong>60 planos de aula por mês</strong></li>
+          <li>Tudo do Mensal, por 3 meses (≈ R$ 24,97/mês)</li>
+          <li>Documentações, slides até 33 e banco de materiais</li>
+          <li>Gemini com acesso ao seu Google Drive <span class="tag em-breve">em breve</span></li>
+        </ul>
+        <button class="btn-plano" type="button" data-plano="trimestral">Usar Trimestral</button>
+      </div>
+      <div class="cartao-plano destaque" data-plano-card="anual">
+        <h3>Anual</h3>
+        <p class="preco">R$ 299<span class="preco-sufixo">/ano</span></p>
+        <ul>
+          <li><strong>60 planos de aula por mês</strong></li>
+          <li>Tudo do Mensal, por 12 meses (≈ R$ 24,92/mês)</li>
+          <li>Documentações, slides até 33 e banco de materiais</li>
+          <li>Gemini com acesso ao seu Google Drive <span class="tag em-breve">em breve</span></li>
+        </ul>
+        <button class="btn-plano" type="button" data-plano="anual">Usar Anual</button>
+      </div>
+    </div>
+    <p class="dica">“Gemini com acesso ao seu Google Drive” está marcado como <strong>em breve</strong>: ainda não foi implementado. Não é possível usá-lo neste MVP — a integração (login Google + permissão de leitura do Drive) será feita numa próxima etapa.</p>
+
+    <h2>Inteligência artificial real — escolha o provedor</h2>
+    <p>Sem chave, o MVP funciona em <strong>modo demonstração</strong>, montando o plano e as documentações a partir de modelos por componente. Com a chave de um provedor, o plano <strong>e</strong> as documentações passam a ser escritos sob medida pela IA. A chave fica só no seu navegador — nunca é enviada para nós nem salva em nenhum arquivo. Instruções completas no arquivo <code>CONFIG.md</code> desta pasta.</p>
+    <p class="dica">O Gemini não liberou cota gratuita nas contas do Thiago — por isso o provedor padrão é o <strong>DeepSeek</strong> (barato e sem burocracia). A <strong>Maritaca</strong> é brasileira, ótima em português e em documentos — é a melhor opção para reescrever as documentações.</p>
+    <label for="seletor-provedor">Provedor de IA</label>
+    <select id="seletor-provedor">
+      <option value="deepseek">DeepSeek — deepseek-chat (recomendado para começar)</option>
+      <option value="maritaca">Maritaca — Sabiá 4 Thinking (raciocínio, melhor em português e documentos)</option>
+      <option value="gemini">Gemini — gemini-2.5-flash-lite (exige faturamento ativo no Google)</option>
+    </select>
+    <p class="dica" id="descricao-provedor"></p>
+    <label for="proxy-url">URL do proxy da Brittech Educação (opcional — resolve o bloqueio CORS)</label>
+    <input type="url" id="proxy-url" placeholder="https://brittech-proxy.onrender.com" autocomplete="off">
+    <div class="acoes-ia">
+      <button class="btn-secundario" type="button" id="btn-salvar-proxy">Salvar URL do proxy</button>
+    </div>
+    <p class="dica" id="status-proxy">Sem proxy configurado — a chamada é direta do navegador (Maritaca e DeepSeek podem bloquear por CORS).</p>
+    <label for="chave-ia" id="rotulo-chave">Chave da API do DeepSeek (opcional)</label>
+    <input type="password" id="chave-ia" placeholder="Cole aqui a sua chave do DeepSeek (sk-…)" autocomplete="off">
+    <div class="acoes-ia">
+      <button class="btn-gerar" type="button" id="btn-salvar-chave">Salvar chave neste navegador</button>
+      <button class="btn-secundario" type="button" id="btn-remover-chave">Remover chave</button>
+      <button class="btn-secundario" type="button" id="btn-testar-ia">Testar conexão com a IA</button>
+    </div>
+    <p class="dica" id="status-ia">Status da IA: modo demonstração, sem IA real.</p>
+    <h3>Chaves configuradas</h3>
+    <ul id="status-provedores"></ul>
+  </section>
+</main>
+
+<footer>Brittech Educação — MVP • Catálogo BNCC v1.0 • Assinaturas na Kiwify: Mensal R$ 29,90/mês e Anual R$ 299/ano cadastrados; Trimestral R$ 74,90 a cadastrar na Kiwify (checkout a criar). Um acesso só, completo. Este MVP não altera nada na cobrança.</footer>
+
+<!-- Área usada só na impressão de um documento ou do plano -->
+<div id="area-impressao" aria-hidden="true"></div>
+
+<script src="bncc.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="slides.js"></script>
+</body>
+</html>
