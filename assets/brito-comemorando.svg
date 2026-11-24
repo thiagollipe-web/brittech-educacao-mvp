@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Brito, mascote do Brittech Educação — comemorando">
+  <ellipse cx="256" cy="462" rx="122" ry="18" fill="#0A2540" opacity="0.12"/>
+  <!-- pernas e sapatos -->
+  <rect x="222" y="378" width="22" height="56" rx="10" fill="#0A2540"/>
+  <rect x="268" y="378" width="22" height="56" rx="10" fill="#0A2540"/>
+  <ellipse cx="232" cy="440" rx="27" ry="13" fill="#84CC16" stroke="#0A2540" stroke-width="4"/>
+  <ellipse cx="280" cy="440" rx="27" ry="13" fill="#84CC16" stroke="#0A2540" stroke-width="4"/>
+  <!-- braços -->
+  <line x1="188" y1="300" x2="142" y2="216" stroke="#0A2540" stroke-width="14" stroke-linecap="round"/><circle cx="138" cy="208" r="16" fill="#FFFFFF" stroke="#0A2540" stroke-width="5"/><line x1="324" y1="300" x2="370" y2="216" stroke="#0A2540" stroke-width="14" stroke-linecap="round"/><circle cx="374" cy="208" r="16" fill="#FFFFFF" stroke="#0A2540" stroke-width="5"/>
+  <!-- corpo de giz -->
+  <rect x="176" y="168" width="160" height="222" rx="76" fill="#FFFFFF" stroke="#0A2540" stroke-width="6"/>
+  <ellipse cx="256" cy="322" rx="58" ry="48" fill="#E6F4FB"/>
+  <!-- capelo de formatura -->
+  <rect x="208" y="176" width="96" height="30" rx="12" fill="#0A2540"/>
+  <polygon points="256,92 374,150 256,208 138,150" fill="#0A2540"/>
+  <line x1="374" y1="150" x2="374" y2="202" stroke="#84CC16" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="374" cy="212" r="11" fill="#84CC16" stroke="#0A2540" stroke-width="4"/>
+  <!-- rosto -->
+  <circle cx="226" cy="255" r="19" fill="none" stroke="#0284C7" stroke-width="5"/>
+  <circle cx="286" cy="255" r="19" fill="none" stroke="#0284C7" stroke-width="5"/>
+  <line x1="245" y1="255" x2="267" y2="255" stroke="#0284C7" stroke-width="5"/>
+  <path d="M212 258 Q226 242 240 258" fill="none" stroke="#0A2540" stroke-width="6" stroke-linecap="round"/><path d="M272 258 Q286 242 300 258" fill="none" stroke="#0A2540" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="198" cy="292" r="10" fill="#F9A8D4" opacity="0.75"/>
+  <circle cx="314" cy="292" r="10" fill="#F9A8D4" opacity="0.75"/>
+  <path d="M232 292 Q256 322 280 292 Q256 304 232 292 Z" fill="#0A2540"/>
+  <polygon points="96.0,104.0 91.7,115.7 80.0,120.0 91.7,124.3 96.0,136.0 100.3,124.3 112.0,120.0 100.3,115.7" fill="#84CC16" stroke="#0A2540" stroke-width="3" stroke-linejoin="round"/><polygon points="420.0,82.0 416.2,92.2 406.0,96.0 416.2,99.8 420.0,110.0 423.8,99.8 434.0,96.0 423.8,92.2" fill="#0284C7" stroke="#0A2540" stroke-width="3" stroke-linejoin="round"/><polygon points="436.0,188.0 432.8,196.8 424.0,200.0 432.8,203.2 436.0,212.0 439.2,203.2 448.0,200.0 439.2,196.8" fill="#84CC16" stroke="#0A2540" stroke-width="3" stroke-linejoin="round"/><polygon points="76.0,208.0 72.8,216.8 64.0,220.0 72.8,223.2 76.0,232.0 79.2,223.2 88.0,220.0 79.2,216.8" fill="#0284C7" stroke="#0A2540" stroke-width="3" stroke-linejoin="round"/><polygon points="410.0,310.0 407.3,317.3 400.0,320.0 407.3,322.7 410.0,330.0 412.7,322.7 420.0,320.0 412.7,317.3" fill="#84CC16" stroke="#0A2540" stroke-width="3" stroke-linejoin="round"/>
+</svg>

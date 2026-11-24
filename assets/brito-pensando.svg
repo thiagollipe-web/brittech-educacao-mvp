@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Brito, mascote do Brittech Educação — pensando, gerando um plano">
+  <ellipse cx="256" cy="462" rx="122" ry="18" fill="#0A2540" opacity="0.12"/>
+  <!-- pernas e sapatos -->
+  <rect x="222" y="378" width="22" height="56" rx="10" fill="#0A2540"/>
+  <rect x="268" y="378" width="22" height="56" rx="10" fill="#0A2540"/>
+  <ellipse cx="232" cy="440" rx="27" ry="13" fill="#84CC16" stroke="#0A2540" stroke-width="4"/>
+  <ellipse cx="280" cy="440" rx="27" ry="13" fill="#84CC16" stroke="#0A2540" stroke-width="4"/>
+  <!-- braços -->
+  <line x1="188" y1="300" x2="238" y2="332" stroke="#0A2540" stroke-width="14" stroke-linecap="round"/><circle cx="244" cy="334" r="16" fill="#FFFFFF" stroke="#0A2540" stroke-width="5"/><line x1="324" y1="300" x2="300" y2="272" stroke="#0A2540" stroke-width="14" stroke-linecap="round"/><circle cx="298" cy="266" r="16" fill="#FFFFFF" stroke="#0A2540" stroke-width="5"/>
+  <!-- corpo de giz -->
+  <rect x="176" y="168" width="160" height="222" rx="76" fill="#FFFFFF" stroke="#0A2540" stroke-width="6"/>
+  <ellipse cx="256" cy="322" rx="58" ry="48" fill="#E6F4FB"/>
+  <!-- capelo de formatura -->
+  <rect x="208" y="176" width="96" height="30" rx="12" fill="#0A2540"/>
+  <polygon points="256,92 374,150 256,208 138,150" fill="#0A2540"/>
+  <line x1="374" y1="150" x2="374" y2="202" stroke="#84CC16" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="374" cy="212" r="11" fill="#84CC16" stroke="#0A2540" stroke-width="4"/>
+  <!-- rosto -->
+  <circle cx="226" cy="255" r="19" fill="none" stroke="#0284C7" stroke-width="5"/>
+  <circle cx="286" cy="255" r="19" fill="none" stroke="#0284C7" stroke-width="5"/>
+  <line x1="245" y1="255" x2="267" y2="255" stroke="#0284C7" stroke-width="5"/>
+  <circle cx="226" cy="248" r="15" fill="#FFFFFF"/><circle cx="286" cy="248" r="15" fill="#FFFFFF"/><circle cx="229" cy="250" r="6.5" fill="#0A2540"/><circle cx="289" cy="250" r="6.5" fill="#0A2540"/><circle cx="231" cy="248" r="2" fill="#FFFFFF"/><circle cx="291" cy="248" r="2" fill="#FFFFFF"/>
+  <circle cx="198" cy="292" r="10" fill="#F9A8D4" opacity="0.75"/>
+  <circle cx="314" cy="292" r="10" fill="#F9A8D4" opacity="0.75"/>
+  <circle cx="256" cy="300" r="8" fill="#0A2540"/>
+  <circle cx="346" cy="176" r="9" fill="#FFFFFF" stroke="#0A2540" stroke-width="4"/><circle cx="372" cy="146" r="13" fill="#FFFFFF" stroke="#0A2540" stroke-width="4"/><circle cx="408" cy="108" r="24" fill="#FFFFFF" stroke="#0A2540" stroke-width="4"/><polygon points="408.0,95.0 404.5,104.5 395.0,108.0 404.5,111.5 408.0,121.0 411.5,111.5 421.0,108.0 411.5,104.5" fill="#84CC16" stroke="#0A2540" stroke-width="3" stroke-linejoin="round"/>
+</svg>
