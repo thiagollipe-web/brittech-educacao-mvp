@@ -278,7 +278,7 @@
   <!-- ============ ABA: ESTUDAR COM IA (MODO ALUNO) ============ -->
   <section id="aba-estudar" class="painel-aba" hidden>
     <h2>Estudar com IA — Modo Aluno</h2>
-    <p>O aluno cola o tema e o conteúdo da aula (ou da apostila) e a IA monta uma aula de estudo: explicação em passos curtos, perguntas de revisão e um quiz com correção e nota. No fim, dá para copiar um resumo para o professor. <strong>Sem login e sem cadastro</strong> — tudo acontece nesta página.</p>
+    <p>O aluno cola o tema e o conteúdo da aula (ou da apostila) e escolhe o formato: na <strong>Aula simulada</strong>, o professor explica e três colegas virtuais perguntam e resumem, como numa sala de aula; na <strong>Aula de estudo</strong>, a IA monta a explicação em passos curtos com perguntas de revisão. Nos dois formatos tem quiz com correção e nota no fim — e dá para copiar um resumo para o professor. <strong>Sem login e sem cadastro</strong> — tudo acontece nesta página.</p>
     <div class="grid">
       <div>
         <label for="estudo-tema">Tema do estudo</label>
@@ -295,12 +295,18 @@
       <button class="btn-secundario" type="button" id="btn-estudo-exemplo">Usar exemplo da biblioteca: Misturas (Ciências, 6º ano)</button>
     </div>
     <p class="dica">Exemplo real da biblioteca gratuita de aulas: “Misturas homogêneas e heterogêneas no dia a dia” (Ciências, 6º ano, habilidade BNCC EF06CI01).</p>
-    <button class="btn-gerar" type="button" id="btn-gerar-estudo">Gerar aula de estudo</button>
+    <div class="toggle-modo" role="group" aria-label="Formato da aula">
+      <button class="btn-modo ativo" type="button" id="btn-modo-simulada" aria-pressed="true">Aula simulada — professor e colegas</button>
+      <button class="btn-modo" type="button" id="btn-modo-estudo" aria-pressed="false">Aula de estudo — passos e revisão</button>
+    </div>
+    <button class="btn-gerar" type="button" id="btn-gerar-estudo">Gerar aula simulada</button>
     <p class="modo" id="estudo-aviso-modo" hidden></p>
 
     <div id="estudo-resultado" hidden>
       <h3 id="estudo-titulo"></h3>
-      <h3>Explicação em passos</h3>
+      <h3 id="estudo-titulo-dialogo" hidden>Aula simulada — a conversa da turma</h3>
+      <div id="estudo-dialogo" hidden></div>
+      <h3 id="estudo-titulo-passos">Explicação em passos</h3>
       <ol id="estudo-passos" class="estudo-passos"></ol>
       <h3>Perguntas de revisão</h3>
       <p class="dica">Tente responder de cabeça e depois clique para ver a resposta.</p>

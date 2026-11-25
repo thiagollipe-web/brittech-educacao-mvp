@@ -193,3 +193,13 @@ footer{text-align:center;color:var(--cinza);font-size:13px;padding:10px}
 .estudo-questao .feedback{font-weight:400;color:var(--tinta);font-size:14px;margin:8px 0 0}
 .estudo-resumo{background:var(--fundo);border:1px solid var(--borda);border-radius:10px;padding:12px;white-space:pre-wrap;font-family:inherit;font-size:14px}
 #estudo-nota.nota-boa{background:#ECFDF5;border-color:#A7F3D0}
+.toggle-modo{display:flex;gap:8px;margin:14px 0 4px;flex-wrap:wrap}
+.btn-modo{flex:1;min-width:200px;padding:10px 12px;border:2px solid var(--borda);background:#fff;color:var(--petroleo);font-size:14px}
+.btn-modo.ativo{border-color:var(--teal);background:#E0F2F7}
+.dialogo-fala{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
+.dialogo-avatar{flex:0 0 36px;width:36px;height:36px;border-radius:50%;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.dialogo-bolha{flex:1;background:var(--fundo);border:1px solid var(--borda);border-radius:12px;padding:10px 12px;min-width:0}
+.dialogo-bolha p{margin:0 0 4px}
+.dialogo-bolha p:last-child{margin-bottom:0}
+.dialogo-nome{font-weight:800;font-size:13px}
+.dialogo-chave{font-size:13px;color:var(--petroleo)}
