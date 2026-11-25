@@ -954,7 +954,7 @@ $('busca').addEventListener('input', function (ev) { renderCatalogo(ev.target.va
 // ---------------------------------------------------------------- Abas
 function trocarAba(nome) {
   document.querySelectorAll('.aba').forEach(function (b) { b.classList.toggle('ativa', b.dataset.aba === nome); });
-  ['gerador', 'docs', 'catalogo', 'slides', 'assistente', 'planos'].forEach(function (n) { $('aba-' + n).hidden = n !== nome; });
+  ['gerador', 'docs', 'catalogo', 'slides', 'assistente', 'estudar', 'planos'].forEach(function (n) { $('aba-' + n).hidden = n !== nome; });
 }
 document.querySelectorAll('.aba').forEach(function (b) {
   b.addEventListener('click', function () { trocarAba(b.dataset.aba); });

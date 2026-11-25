@@ -174,3 +174,22 @@ footer{text-align:center;color:var(--cinza);font-size:13px;padding:10px}
 .tabela-agente th{background:#E0F2F7;color:var(--petroleo)}
 .google-ok{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;padding:10px 12px}
 .google-off{background:#FFF7E6;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px}
+
+/* ============ ESTUDAR COM IA (MODO ALUNO) ============ */
+.estudo-passos li{margin-bottom:12px}
+.estudo-passos h4{margin:0 0 4px;color:var(--petroleo)}
+.estudo-passos p{margin:0}
+.estudo-revisao{border:1px solid var(--borda);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.estudo-revisao summary{font-weight:700;cursor:pointer;color:var(--petroleo)}
+.estudo-revisao p{margin:8px 0 0}
+.estudo-questao{border:1px solid var(--borda);border-radius:12px;padding:14px;margin-bottom:14px}
+.estudo-questao p{font-weight:700;color:var(--petroleo);margin:0 0 8px}
+.estudo-questao label{display:block;font-weight:400;margin:6px 0;cursor:pointer}
+.estudo-questao input{margin-right:8px}
+.estudo-questao.certa{border-color:var(--verde);background:#F0FDF4}
+.estudo-questao.errada{border-color:#EF4444;background:#FEF2F2}
+.estudo-questao .resp-certa{color:#15803D;font-weight:700}
+.estudo-questao .resp-errada{color:#B91C1C;font-weight:700}
+.estudo-questao .feedback{font-weight:400;color:var(--tinta);font-size:14px;margin:8px 0 0}
+.estudo-resumo{background:var(--fundo);border:1px solid var(--borda);border-radius:10px;padding:12px;white-space:pre-wrap;font-family:inherit;font-size:14px}
+#estudo-nota.nota-boa{background:#ECFDF5;border-color:#A7F3D0}

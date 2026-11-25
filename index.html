@@ -58,6 +58,7 @@
     <button type="button" class="aba" data-aba="catalogo">Catálogo BNCC</button>
     <button type="button" class="aba" data-aba="slides">Slides da aula</button>
     <button type="button" class="aba" data-aba="assistente">Assistente (Brito)</button>
+    <button type="button" class="aba" data-aba="estudar">Estudar com IA</button>
     <button type="button" class="aba" data-aba="planos">Planos e IA</button>
   </nav>
 </header>
@@ -274,6 +275,52 @@
     </div>
   </section>
 
+  <!-- ============ ABA: ESTUDAR COM IA (MODO ALUNO) ============ -->
+  <section id="aba-estudar" class="painel-aba" hidden>
+    <h2>Estudar com IA — Modo Aluno</h2>
+    <p>O aluno cola o tema e o conteúdo da aula (ou da apostila) e a IA monta uma aula de estudo: explicação em passos curtos, perguntas de revisão e um quiz com correção e nota. No fim, dá para copiar um resumo para o professor. <strong>Sem login e sem cadastro</strong> — tudo acontece nesta página.</p>
+    <div class="grid">
+      <div>
+        <label for="estudo-tema">Tema do estudo</label>
+        <input type="text" id="estudo-tema" placeholder="Ex.: Misturas homogêneas e heterogêneas" autocomplete="off">
+      </div>
+      <div>
+        <label for="estudo-nome">Seu nome (opcional — aparece no resumo)</label>
+        <input type="text" id="estudo-nome" placeholder="Ex.: Ana, 6º ano B" autocomplete="off">
+      </div>
+    </div>
+    <label for="estudo-texto">Conteúdo da aula ou da apostila (cole aqui)</label>
+    <textarea id="estudo-texto" rows="8" placeholder="Cole o texto da aula, da apostila ou do resumo — quanto mais completo, melhor a aula gerada. Se deixar vazio, a IA gera a aula só a partir do tema."></textarea>
+    <div class="acoes-ia">
+      <button class="btn-secundario" type="button" id="btn-estudo-exemplo">Usar exemplo da biblioteca: Misturas (Ciências, 6º ano)</button>
+    </div>
+    <p class="dica">Exemplo real da biblioteca gratuita de aulas: “Misturas homogêneas e heterogêneas no dia a dia” (Ciências, 6º ano, habilidade BNCC EF06CI01).</p>
+    <button class="btn-gerar" type="button" id="btn-gerar-estudo">Gerar aula de estudo</button>
+    <p class="modo" id="estudo-aviso-modo" hidden></p>
+
+    <div id="estudo-resultado" hidden>
+      <h3 id="estudo-titulo"></h3>
+      <h3>Explicação em passos</h3>
+      <ol id="estudo-passos" class="estudo-passos"></ol>
+      <h3>Perguntas de revisão</h3>
+      <p class="dica">Tente responder de cabeça e depois clique para ver a resposta.</p>
+      <div id="estudo-revisao"></div>
+      <h3>Quiz — teste o que você aprendeu</h3>
+      <form id="estudo-quiz"></form>
+      <div class="acoes-ia">
+        <button class="btn-gerar" type="button" id="btn-corrigir-quiz">Corrigir quiz</button>
+        <button class="btn-secundario" type="button" id="btn-refazer-quiz" hidden>Refazer quiz</button>
+      </div>
+      <div id="estudo-nota" class="aviso" hidden></div>
+      <h3>Resumo para o professor</h3>
+      <p class="dica">Copie e mande para o professor — por mensagem, e-mail ou como você combinar com ele.</p>
+      <div class="acoes-ia">
+        <button class="btn-secundario" type="button" id="btn-copiar-resumo">Copiar resumo</button>
+      </div>
+      <pre id="estudo-resumo" class="estudo-resumo"></pre>
+    </div>
+  </section>
+
   <!-- ============ ABA: CATÁLOGO ============ -->
   <section id="aba-catalogo" class="painel-aba" hidden>
     <h2>Catálogo BNCC</h2>
@@ -405,6 +452,7 @@
 <script src="bncc.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script src="estudar.js"></script>
 <script src="slides.js"></script>
 <script src="google.js"></script>
 <script src="agente.js"></script>
