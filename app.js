@@ -82,9 +82,9 @@ function avisar(msg) {
 
 // ---------------------------------------------------------------- Brito
 var BRITO = {
-  saudacao:    { img: 'assets/brito-saudacao.svg',    alt: 'Brito, mascote do Brittech Educação, acenando', titulo: 'Oi, eu sou o Brito!', fala: 'Seu ajudante de planejamento. Escolha a etapa, o componente da BNCC e o tema — eu monto o plano de aula para você, do planejamento à prática.' },
-  pensando:    { img: 'assets/brito-pensando.svg',    alt: 'Brito pensando enquanto monta o plano', titulo: 'Pensando no seu plano…', fala: 'Só um instante: estou organizando objetivos, atividades e avaliação com a habilidade da BNCC que você escolheu.' },
-  comemorando: { img: 'assets/brito-comemorando.svg', alt: 'Brito comemorando o plano pronto', titulo: 'Plano pronto, professor(a)!', fala: 'Já deixei tudo organizado — revise, ajuste o que quiser, imprima ou gere as documentações da turma na próxima aba.' },
+  saudacao:    { img: 'assets/brito-v2-saudacao.png',    alt: 'Brito, mascote do Brittech Educação, acenando', titulo: 'Oi, eu sou o Brito!', fala: 'Seu ajudante de planejamento. Escolha a etapa, o componente da BNCC e o tema — eu monto o plano de aula para você, do planejamento à prática.' },
+  pensando:    { img: 'assets/brito-v2-pensando.png',    alt: 'Brito pensando enquanto monta o plano', titulo: 'Pensando no seu plano…', fala: 'Só um instante: estou organizando objetivos, atividades e avaliação com a habilidade da BNCC que você escolheu.' },
+  comemorando: { img: 'assets/brito-v2-comemorando.png', alt: 'Brito comemorando o plano pronto', titulo: 'Plano pronto, professor(a)!', fala: 'Já deixei tudo organizado — revise, ajuste o que quiser, imprima ou gere as documentações da turma na próxima aba.' },
 };
 function setBrito(pose) {
   var b = BRITO[pose] || BRITO.saudacao;

@@ -53,6 +53,7 @@
     </div>
   </div>
   <nav class="abas" aria-label="Seções do planejador">
+    <div class="abas-inner">
     <button type="button" class="aba ativa" data-aba="gerador">1. Gerador de plano</button>
     <button type="button" class="aba" data-aba="docs">2. Documentações</button>
     <button type="button" class="aba" data-aba="catalogo">Catálogo BNCC</button>
@@ -60,18 +61,21 @@
     <button type="button" class="aba" data-aba="assistente">Assistente (Brito)</button>
     <button type="button" class="aba" data-aba="estudar">Estudar com IA</button>
     <button type="button" class="aba" data-aba="planos">Planos e IA</button>
+    </div>
   </nav>
 </header>
 
 <main>
   <!-- ============ HERO / BRITO ============ -->
   <section class="hero-mascote" id="hero-brito">
-    <img id="brito-img" src="assets/brito-saudacao.svg" alt="Brito, mascote do Brittech Educação, acenando" width="160" height="160">
-    <div>
+    <div class="hero-texto">
       <h2 id="brito-titulo">Oi, eu sou o Brito!</h2>
       <p id="brito-fala">Seu ajudante de planejamento. Escolha a etapa, o componente da BNCC e o tema — eu monto o plano de aula para você, do planejamento à prática.</p>
       <p class="modo" id="modo-ia"><strong>Modo demonstração, sem IA real.</strong> Os planos são montados a partir de modelos por componente. Para ligar a IA real, escolha um provedor (Gemini, DeepSeek ou Maritaca) e configure sua chave na aba “Planos e IA” — veja o arquivo CONFIG.md.</p>
     </div>
+    <figure class="hero-brito-figura">
+      <img id="brito-img" src="assets/brito-v2-saudacao.png" alt="Brito, mascote do Brittech Educação, acenando" width="512" height="512">
+    </figure>
   </section>
 
   <!-- Mensagens (substituem alertas: não travam a página) -->
@@ -244,7 +248,10 @@
 
   <!-- ============ ABA: ASSISTENTE (BRITO) ============ -->
   <section id="aba-assistente" class="painel-aba" hidden>
-    <h2>Assistente Brito — documentos e planilhas</h2>
+    <div class="assistente-cabecalho">
+      <img class="assistente-avatar" src="assets/brito-v2-saudacao.png" alt="Brito, assistente do Brittech Educação" width="56" height="56">
+      <h2>Assistente Brito — documentos e planilhas</h2>
+    </div>
     <p>Peça em linguagem natural o que você precisa — um documento ou uma planilha — e o Brito monta para você. Ele pergunta o que falta (turma, datas, nomes, disciplina) e depois entrega o resultado editável, para baixar em <strong>.docx</strong> ou <strong>.xlsx</strong> ou salvar no seu <strong>Google Drive</strong>.</p>
     <p class="dica" data-google-status>Google não configurado.</p>
     <div id="agente-chat" class="chat-agente" aria-live="polite">
