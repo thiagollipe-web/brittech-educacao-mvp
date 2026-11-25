@@ -20,10 +20,10 @@ var modoEstudo = 'simulada'; // 'simulada' (padrão) ou 'estudo'
 // só o conceito: professor + colegas com papéis distintos; o código e os
 // textos são nossos). Avatar = círculo colorido com a inicial.
 var PERSONAGENS = {
-  professor: { nome: 'Professor', cor: '#3b82f6', inicial: 'Pr' },
-  curioso: { nome: 'Curioso', cor: '#ec4899', inicial: 'Cu' },
-  anotador: { nome: 'Anotador', cor: '#06b6d4', inicial: 'An' },
-  pensador: { nome: 'Pensador', cor: '#f59e0b', inicial: 'Pe' },
+  professor: { nome: 'Professor', cor: '#3b82f6', inicial: 'Pr', voz: { pitch: 0.8, rate: 0.95 } },
+  curioso: { nome: 'Curioso', cor: '#ec4899', inicial: 'Cu', voz: { pitch: 1.4, rate: 1.1 } },
+  anotador: { nome: 'Anotador', cor: '#06b6d4', inicial: 'An', voz: { pitch: 1.1, rate: 1.0 } },
+  pensador: { nome: 'Pensador', cor: '#f59e0b', inicial: 'Pe', voz: { pitch: 0.9, rate: 0.9 } },
 };
 
 // Exemplo real da biblioteca gratuita de aulas: "Misturas homogêneas e
@@ -221,6 +221,284 @@ function montarDialogoDemo(tema, passos) {
   return dialogo;
 }
 
+// ---------------------------------------------------------------- Aula ao vivo (Assistir aula)
+// Reprodução da aula simulada fala por fala, como no OpenMAIC: cada
+// personagem fala com voz própria (Web Speech API, grátis, sem chave —
+// speechSynthesis do navegador, voz pt-BR quando disponível) e o professor
+// escreve o ponto-chave na lousa em tempo real, enquanto fala. Sem voz no
+// navegador, a aula segue só visual (texto + lousa), com aviso na tela.
+// A fala só é considerada "dita" quando o áudio termina (onend) ou após o
+// tempo estimado, se o áudio falhar (timeout de segurança).
+var aoVivo = null; // { indice, tocando, pausado, mudo, timerFala, timerEscrita, lousaPorFala }
+var lousaLinhas = []; // { texto, cor, escrito }
+var fatorTempoTeste = 1; // gancho de teste: multiplica os tempos estimados
+var forcarSemVozTeste = false; // gancho de teste: simula navegador sem voz
+
+function temSinteseVoz() {
+  if (forcarSemVozTeste) return false;
+  return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+}
+function listarVozes() {
+  if (!temSinteseVoz()) return [];
+  try { return window.speechSynthesis.getVoices() || []; } catch (e) { return []; }
+}
+function vozesPTBR() {
+  var todas = listarVozes();
+  var pt = todas.filter(function (v) { return (v.lang || '').toLowerCase().indexOf('pt') === 0; });
+  return pt.length ? pt : todas;
+}
+// Varia a voz por personagem quando há mais de uma voz disponível.
+function vozPara(personagem, indice) {
+  var lista = vozesPTBR();
+  if (!lista.length) return null;
+  var ordem = ['professor', 'curioso', 'anotador', 'pensador'];
+  var base = ordem.indexOf(personagem);
+  if (base < 0) base = 0;
+  return lista[(base + (indice || 0)) % lista.length];
+}
+// Tempo estimado de fala: ~150 palavras por minuto + folga.
+function duracaoEstimadaMs(texto) {
+  var palavras = String(texto || '').split(/\s+/).filter(function (s) { return s; }).length;
+  return Math.max(2500, palavras * 450 + 1200);
+}
+
+// ---------------------------------------------------------------- Lousa ao vivo (canvas, quadro de giz)
+// Fundo verde-escuro com linhas claras; o professor escreve o ponto-chave
+// em giz branco, letra por letra, e o Anotador escreve o resumo em ciano.
+// As anotações ficam na lousa até o fim da aula (ou até "Limpar lousa").
+function quebrarTextoLousa(ctx, texto, larguraMax) {
+  var palavras = String(texto).split(/\s+/).filter(function (s) { return s; });
+  var linhas = [], atual = '';
+  palavras.forEach(function (pal) {
+    var teste = atual ? atual + ' ' + pal : pal;
+    if (ctx.measureText(teste).width > larguraMax && atual) { linhas.push(atual); atual = pal; }
+    else atual = teste;
+  });
+  if (atual) linhas.push(atual);
+  return linhas.length ? linhas : [''];
+}
+function desenharLousa() {
+  var c = $('lousa');
+  if (!c) return;
+  var ctx = c.getContext('2d');
+  ctx.fillStyle = '#14532d';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (var y = 56; y < c.height; y += 56) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(c.width, y); ctx.stroke(); }
+  ctx.font = '20px "Comic Sans MS", "Segoe Print", cursive';
+  ctx.textBaseline = 'top';
+  var yy = 18;
+  lousaLinhas.forEach(function (linha) {
+    ctx.fillStyle = linha.cor;
+    var partes = quebrarTextoLousa(ctx, linha.texto.slice(0, linha.escrito), c.width - 32);
+    partes.forEach(function (p) {
+      if (yy > c.height - 24) return;
+      ctx.fillText(p, 16, yy);
+      yy += 28;
+    });
+  });
+}
+function finalizarEscritaLousa() {
+  if (aoVivo && aoVivo.timerEscrita) { clearTimeout(aoVivo.timerEscrita); aoVivo.timerEscrita = null; }
+  lousaLinhas.forEach(function (l) { l.escrito = l.texto.length; });
+  desenharLousa();
+}
+function limparLousa() {
+  if (aoVivo && aoVivo.timerEscrita) { clearTimeout(aoVivo.timerEscrita); aoVivo.timerEscrita = null; }
+  lousaLinhas = [];
+  desenharLousa();
+}
+// Escreve o texto na lousa letra por letra, durando aproximadamente o
+// tempo da fala (para acompanhar a narração do professor).
+function escreverNaLousa(texto, cor, duracaoMs) {
+  if (!aoVivo) return;
+  if (aoVivo.timerEscrita) { clearTimeout(aoVivo.timerEscrita); aoVivo.timerEscrita = null; }
+  lousaLinhas.forEach(function (l) { l.escrito = l.texto.length; });
+  var linha = { texto: String(texto || ''), cor: cor || '#ffffff', escrito: 0 };
+  lousaLinhas.push(linha);
+  desenharLousa();
+  var total = linha.texto.length;
+  if (!total) return;
+  var intervalo = Math.max(25, Math.round(((duracaoMs || 3000) * fatorTempoTeste) / total));
+  var passo = function () {
+    if (!aoVivo) return;
+    if (!aoVivo.tocando || aoVivo.pausado) { aoVivo.timerEscrita = null; return; }
+    linha.escrito++;
+    desenharLousa();
+    if (linha.escrito < total) aoVivo.timerEscrita = setTimeout(passo, intervalo);
+    else aoVivo.timerEscrita = null;
+  };
+  aoVivo.timerEscrita = setTimeout(passo, intervalo);
+}
+
+// ---------------------------------------------------------------- Reprodução da aula ao vivo
+function linhasDialogoDOM() {
+  return Array.prototype.slice.call(document.querySelectorAll('#estudo-dialogo .dialogo-fala'));
+}
+function mostrarFalaDOM(i) {
+  linhasDialogoDOM().forEach(function (el, j) {
+    el.classList.toggle('fala-oculta', j > i);
+    el.classList.toggle('fala-atual', j === i);
+  });
+  var atual = document.querySelector('#estudo-dialogo .dialogo-fala[data-fala="' + i + '"]');
+  if (atual) atual.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function atualizarProgressoAoVivo() {
+  var p = $('ao-vivo-progresso');
+  if (!p) return;
+  if (!aoVivo || !aoVivo.tocando || !aulaEstudo || !aulaEstudo.dialogo) { p.hidden = true; return; }
+  p.hidden = false;
+  var total = aulaEstudo.dialogo.length;
+  var f = aulaEstudo.dialogo[aoVivo.indice];
+  var pers = (f && PERSONAGENS[f.personagem]) || PERSONAGENS.professor;
+  p.textContent = 'Fala ' + (aoVivo.indice + 1) + ' de ' + total + ' — ' + pers.nome + (aoVivo.pausado ? ' (pausada)' : '');
+}
+function atualizarBotoesAoVivo() {
+  var play = $('btn-play-aula'), pausa = $('btn-pausar-aula'), prox = $('btn-proxima-fala'), mudoBtn = $('btn-mudo-aula');
+  if (!play) return;
+  var st = aoVivo;
+  var tocando = !!(st && st.tocando && !st.pausado);
+  var pausado = !!(st && st.pausado);
+  var fim = !!(st && aulaEstudo && aulaEstudo.dialogo && st.indice >= aulaEstudo.dialogo.length);
+  play.hidden = tocando;
+  play.textContent = fim ? '▶ Assistir de novo' : (pausado ? '▶ Continuar aula' : '▶ Assistir aula');
+  pausa.hidden = !tocando;
+  prox.hidden = !(tocando || pausado);
+  mudoBtn.hidden = !(tocando || pausado);
+  mudoBtn.textContent = (st && st.mudo) ? '🔇 Mudo' : '🔊 Som ligado';
+}
+function atualizarAvisoVoz() {
+  var aviso = $('ao-vivo-aviso-voz');
+  if (!aviso) return;
+  if (!temSinteseVoz()) {
+    aviso.hidden = false;
+    aviso.textContent = 'Seu navegador não tem voz — a aula segue só com texto e lousa.';
+    return;
+  }
+  var pt = listarVozes().filter(function (v) { return (v.lang || '').toLowerCase().indexOf('pt') === 0; });
+  if (!pt.length) {
+    aviso.hidden = false;
+    aviso.textContent = 'Nenhuma voz em português encontrada neste navegador — usando a voz padrão.';
+  } else aviso.hidden = true;
+}
+function cancelarFalaAtual() {
+  if (temSinteseVoz()) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  if (aoVivo) {
+    if (aoVivo.timerFala) { clearTimeout(aoVivo.timerFala); aoVivo.timerFala = null; }
+    if (aoVivo.timerEscrita) { clearTimeout(aoVivo.timerEscrita); aoVivo.timerEscrita = null; }
+  }
+}
+function pararAoVivo() {
+  cancelarFalaAtual();
+  if (aoVivo) { aoVivo.tocando = false; aoVivo.pausado = false; }
+  atualizarBotoesAoVivo();
+}
+function iniciarAoVivo() {
+  if (!aulaEstudo || !aulaEstudo.dialogo || !aulaEstudo.dialogo.length) { avisar('Gere primeiro uma aula simulada.'); return; }
+  cancelarFalaAtual();
+  limparLousa();
+  var mudoAnterior = aoVivo ? aoVivo.mudo : false;
+  aoVivo = { indice: 0, tocando: true, pausado: false, mudo: mudoAnterior, timerFala: null, timerEscrita: null, lousaPorFala: {} };
+  atualizarBotoesAoVivo();
+  tocarFala(0);
+}
+function tocarFala(i) {
+  var falas = aulaEstudo.dialogo;
+  if (!aoVivo || !aoVivo.tocando || aoVivo.pausado) return;
+  if (i >= falas.length) { finalizarAulaAoVivo(); return; }
+  aoVivo.indice = i;
+  var f = falas[i];
+  mostrarFalaDOM(i);
+  atualizarProgressoAoVivo();
+  atualizarBotoesAoVivo();
+  // Lousa: o professor escreve o ponto-chave; o anotador escreve o resumo.
+  if (!aoVivo.lousaPorFala[i]) {
+    aoVivo.lousaPorFala[i] = true;
+    if (f.personagem === 'professor' && f.chave) escreverNaLousa(f.chave, '#ffffff', duracaoEstimadaMs(f.texto));
+    else if (f.personagem === 'anotador') escreverNaLousa(f.texto, '#67e8f9', duracaoEstimadaMs(f.texto));
+  }
+  var avancou = false;
+  var avancar = function () {
+    if (avancou || !aoVivo || !aoVivo.tocando || aoVivo.pausado) return;
+    avancou = true;
+    finalizarEscritaLousa();
+    tocarFala(i + 1);
+  };
+  var duracao = duracaoEstimadaMs(f.texto) * fatorTempoTeste;
+  if (aoVivo.mudo || !temSinteseVoz()) {
+    aoVivo.timerFala = setTimeout(avancar, duracao);
+    return;
+  }
+  try {
+    var u = new SpeechSynthesisUtterance(f.texto);
+    var p = PERSONAGENS[f.personagem] || PERSONAGENS.professor;
+    u.lang = 'pt-BR';
+    u.pitch = (p.voz && p.voz.pitch) || 1;
+    u.rate = (p.voz && p.voz.rate) || 1;
+    var voz = vozPara(f.personagem, i);
+    if (voz) u.voice = voz;
+    u.onend = avancar;
+    u.onerror = avancar;
+    window.speechSynthesis.speak(u);
+    // Segurança: se o áudio não terminar (voz ausente, navegador travado),
+    // avança pelo tempo estimado.
+    aoVivo.timerFala = setTimeout(avancar, (duracaoEstimadaMs(f.texto) + 5000) * fatorTempoTeste);
+  } catch (e) {
+    aoVivo.timerFala = setTimeout(avancar, duracao);
+  }
+}
+function pausarAoVivo() {
+  if (!aoVivo || !aoVivo.tocando || aoVivo.pausado) return;
+  aoVivo.pausado = true;
+  cancelarFalaAtual();
+  finalizarEscritaLousa();
+  atualizarProgressoAoVivo();
+  atualizarBotoesAoVivo();
+}
+function continuarAoVivo() {
+  if (!aoVivo || !aoVivo.tocando || !aoVivo.pausado) return;
+  aoVivo.pausado = false;
+  atualizarBotoesAoVivo();
+  tocarFala(aoVivo.indice);
+}
+function proximaFala() {
+  if (!aoVivo || !aoVivo.tocando) return;
+  var i = aoVivo.indice;
+  cancelarFalaAtual();
+  finalizarEscritaLousa();
+  aoVivo.pausado = false;
+  tocarFala(i + 1);
+}
+function alternarMudo() {
+  if (!aoVivo) return;
+  aoVivo.mudo = !aoVivo.mudo;
+  atualizarBotoesAoVivo();
+  if (aoVivo.tocando && !aoVivo.pausado) {
+    var i = aoVivo.indice;
+    cancelarFalaAtual();
+    tocarFala(i);
+  }
+}
+function finalizarAulaAoVivo() {
+  if (!aoVivo) return;
+  aoVivo.indice = aulaEstudo.dialogo.length;
+  aoVivo.tocando = false;
+  aoVivo.pausado = false;
+  finalizarEscritaLousa();
+  linhasDialogoDOM().forEach(function (el) { el.classList.remove('fala-oculta', 'fala-atual'); });
+  var p = $('ao-vivo-progresso');
+  if (p) { p.hidden = false; p.textContent = 'Aula concluída! Agora faça o quiz abaixo.'; }
+  atualizarBotoesAoVivo();
+}
+// As vozes do navegador carregam de forma assíncrona — quando chegarem,
+// atualiza o aviso de voz (se a aba estiver com uma aula simulada).
+if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis && window.speechSynthesis.addEventListener) {
+  window.speechSynthesis.addEventListener('voiceschanged', function () {
+    if (aulaEstudo && aulaEstudo.modo === 'simulada') atualizarAvisoVoz();
+  });
+}
+
 // ---------------------------------------------------------------- Geração (IA ou demonstração)
 async function gerarAulaEstudo() {
   var tema = $('estudo-tema').value.trim();
@@ -228,6 +506,7 @@ async function gerarAulaEstudo() {
   var nome = $('estudo-nome').value.trim();
   if (!tema) { avisar('Escreva o tema do estudo antes de gerar a aula.'); $('estudo-tema').focus(); return; }
   if (gerandoEstudo) return;
+  pararAoVivo(); // uma nova aula interrompe a reprodução da anterior
   gerandoEstudo = true;
   var btn = $('btn-gerar-estudo');
   btn.disabled = true; btn.textContent = 'Gerando aula…';
@@ -288,18 +567,24 @@ function renderizarAulaEstudo(erroIA) {
   // mostra os passos no lugar do diálogo. Revisão, quiz e resumo são iguais.
   $('estudo-titulo-passos').hidden = simulada;
   $('estudo-passos').hidden = simulada;
+  $('estudo-simulada-wrap').hidden = !simulada;
   $('estudo-titulo-dialogo').hidden = !simulada;
   $('estudo-dialogo').hidden = !simulada;
   if (simulada) {
-    $('estudo-dialogo').innerHTML = (a.dialogo || []).map(function (f) {
+    pararAoVivo();
+    $('estudo-dialogo').innerHTML = (a.dialogo || []).map(function (f, i) {
       var p = PERSONAGENS[f.personagem] || PERSONAGENS.professor;
-      return '<div class="dialogo-fala">' +
+      return '<div class="dialogo-fala" data-fala="' + i + '">' +
         '<span class="dialogo-avatar" style="background:' + p.cor + '" aria-hidden="true">' + p.inicial + '</span>' +
         '<div class="dialogo-bolha"><p class="dialogo-nome" style="color:' + p.cor + '">' + p.nome + '</p>' +
         '<p>' + esc(f.texto) + '</p>' +
         (f.chave ? '<p class="dialogo-chave">Ponto-chave: <strong>' + esc(f.chave) + '</strong></p>' : '') +
         '</div></div>';
     }).join('');
+    limparLousa();
+    atualizarAvisoVoz();
+    atualizarBotoesAoVivo();
+    atualizarProgressoAoVivo();
   }
   $('estudo-passos').innerHTML = a.explicacao.map(function (p) {
     return '<li><h4>' + esc(p.titulo) + '</h4><p>' + esc(p.texto) + '</p></li>';
@@ -422,6 +707,16 @@ $('btn-copiar-resumo').addEventListener('click', function (ev) {
   copiarTexto(montarResumoEstudo(), ev.currentTarget);
 });
 
+// ---------------------------------------------------------------- Ligações da aula ao vivo
+$('btn-play-aula').addEventListener('click', function () {
+  if (aoVivo && aoVivo.tocando && aoVivo.pausado) continuarAoVivo();
+  else iniciarAoVivo();
+});
+$('btn-pausar-aula').addEventListener('click', function () { pausarAoVivo(); });
+$('btn-proxima-fala').addEventListener('click', function () { proximaFala(); });
+$('btn-mudo-aula').addEventListener('click', function () { alternarMudo(); });
+$('btn-limpar-lousa').addEventListener('click', function () { limparLousa(); });
+
 // ---------------------------------------------------------------- Ganchos p/ testes automatizados (não afetam o uso normal)
 if (window.__brittech) {
   window.__brittech.estudar = {
@@ -444,6 +739,30 @@ if (window.__brittech) {
     responder: function (i, alt) {
       var r = document.querySelector('input[name="estudo-q' + i + '"][value="' + alt + '"]');
       if (r) r.checked = true;
+    },
+    aoVivo: {
+      estado: function () {
+        return {
+          tocando: !!(aoVivo && aoVivo.tocando),
+          pausado: !!(aoVivo && aoVivo.pausado),
+          indice: aoVivo ? aoVivo.indice : -1,
+          total: aulaEstudo && aulaEstudo.dialogo ? aulaEstudo.dialogo.length : 0,
+          mudo: !!(aoVivo && aoVivo.mudo),
+          temVoz: temSinteseVoz(),
+          linhasLousa: lousaLinhas.length,
+          falasVisiveis: document.querySelectorAll('#estudo-dialogo .dialogo-fala:not(.fala-oculta)').length,
+        };
+      },
+      play: iniciarAoVivo,
+      pausar: pausarAoVivo,
+      continuar: continuarAoVivo,
+      proxima: proximaFala,
+      mudo: alternarMudo,
+      limparLousa: limparLousa,
+      parar: pararAoVivo,
+      setFatorTempo: function (f) { fatorTempoTeste = f; },
+      forcarSemVoz: function (v) { forcarSemVozTeste = !!v; },
+      getLousa: function () { return lousaLinhas.map(function (l) { return { texto: l.texto, cor: l.cor, escrito: l.escrito }; }); },
     },
   };
 }

@@ -203,3 +203,15 @@ footer{text-align:center;color:var(--cinza);font-size:13px;padding:10px}
 .dialogo-bolha p:last-child{margin-bottom:0}
 .dialogo-nome{font-weight:800;font-size:13px}
 .dialogo-chave{font-size:13px;color:var(--petroleo)}
+
+/* Aula ao vivo — lousa + narração (ideia do OpenMAIC: professor escreve na
+   lousa enquanto explica e cada personagem fala com voz própria). No
+   celular a lousa fica acima do diálogo; no computador, ao lado. */
+#estudo-simulada-wrap{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){#estudo-simulada-wrap{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start}}
+#lousa{width:100%;height:auto;display:block;background:#14532d;border:8px solid #78350f;border-radius:8px}
+.lousa-acoes{margin-top:8px}
+.ao-vivo-controles{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ao-vivo-controles .btn-gerar{flex:1 1 auto}
+.dialogo-fala.fala-oculta{display:none}
+.dialogo-fala.fala-atual .dialogo-bolha{border-color:var(--teal);box-shadow:0 0 0 2px rgba(2,132,199,.25)}

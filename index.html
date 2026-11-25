@@ -278,7 +278,7 @@
   <!-- ============ ABA: ESTUDAR COM IA (MODO ALUNO) ============ -->
   <section id="aba-estudar" class="painel-aba" hidden>
     <h2>Estudar com IA — Modo Aluno</h2>
-    <p>O aluno cola o tema e o conteúdo da aula (ou da apostila) e escolhe o formato: na <strong>Aula simulada</strong>, o professor explica e três colegas virtuais perguntam e resumem, como numa sala de aula; na <strong>Aula de estudo</strong>, a IA monta a explicação em passos curtos com perguntas de revisão. Nos dois formatos tem quiz com correção e nota no fim — e dá para copiar um resumo para o professor. <strong>Sem login e sem cadastro</strong> — tudo acontece nesta página.</p>
+    <p>O aluno cola o tema e o conteúdo da aula (ou da apostila) e escolhe o formato: na <strong>Aula simulada</strong>, o professor explica e três colegas virtuais perguntam e resumem, como numa sala de aula — e dá para <strong>assistir à aula ao vivo</strong>, com cada personagem falando com a própria voz e o professor escrevendo na lousa enquanto explica; na <strong>Aula de estudo</strong>, a IA monta a explicação em passos curtos com perguntas de revisão. Nos dois formatos tem quiz com correção e nota no fim — e dá para copiar um resumo para o professor. <strong>Sem login e sem cadastro</strong> — tudo acontece nesta página.</p>
     <div class="grid">
       <div>
         <label for="estudo-tema">Tema do estudo</label>
@@ -304,8 +304,28 @@
 
     <div id="estudo-resultado" hidden>
       <h3 id="estudo-titulo"></h3>
-      <h3 id="estudo-titulo-dialogo" hidden>Aula simulada — a conversa da turma</h3>
-      <div id="estudo-dialogo" hidden></div>
+      <div id="estudo-simulada-wrap" hidden>
+        <div id="estudo-ao-vivo">
+          <h3>Aula ao vivo — assista e ouça a turma</h3>
+          <p class="dica">Aperte “Assistir aula”: cada personagem fala com a própria voz e o professor escreve o ponto-chave na lousa enquanto explica. Funciona também no modo demonstração.</p>
+          <canvas id="lousa" width="640" height="360" aria-label="Lousa da aula ao vivo"></canvas>
+          <div class="acoes-ia lousa-acoes">
+            <button class="btn-secundario" type="button" id="btn-limpar-lousa">🧹 Limpar lousa</button>
+          </div>
+          <div class="ao-vivo-controles">
+            <button class="btn-gerar" type="button" id="btn-play-aula">▶ Assistir aula</button>
+            <button class="btn-secundario" type="button" id="btn-pausar-aula" hidden>⏸ Pausar</button>
+            <button class="btn-secundario" type="button" id="btn-proxima-fala" hidden>⏭ Próxima fala</button>
+            <button class="btn-secundario" type="button" id="btn-mudo-aula" hidden>🔊 Som ligado</button>
+          </div>
+          <p class="modo" id="ao-vivo-aviso-voz" hidden></p>
+          <p class="dica" id="ao-vivo-progresso" hidden></p>
+        </div>
+        <div>
+          <h3 id="estudo-titulo-dialogo">Aula simulada — a conversa da turma</h3>
+          <div id="estudo-dialogo"></div>
+        </div>
+      </div>
       <h3 id="estudo-titulo-passos">Explicação em passos</h3>
       <ol id="estudo-passos" class="estudo-passos"></ol>
       <h3>Perguntas de revisão</h3>
