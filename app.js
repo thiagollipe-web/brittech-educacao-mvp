@@ -989,7 +989,7 @@ $('btn-remover-chave').addEventListener('click', function () {
 $('btn-salvar-proxy').addEventListener('click', function () {
   var v = ($('proxy-url').value || '').trim().replace(/\/+$/, '');
   if (v) {
-    if (!/^https?:\/\//.test(v)) { avisar('A URL do proxy precisa começar com http:// ou https:// — ex.: https://brittech-proxy.onrender.com'); return; }
+    if (!/^https?:\/\//.test(v)) { avisar('A URL do proxy precisa começar com http:// ou https:// — ex.: https://brittech-proxy.duckdns.org'); return; }
     localStorage.setItem(CHAVE_PROXY, v);
     atualizarModoIA();
     atualizarCamposIA();

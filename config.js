@@ -27,7 +27,7 @@ window.BRITTECH_CONFIG = {
   // ../proxy/README.md). Com ela preenchida, o MVP chama o proxy em vez da
   // API direta: a chave fica só no servidor, nunca neste navegador, e o
   // bloqueio CORS some. Deixe '' para usar a chamada direta (modo antigo).
-  proxyUrl: '',         // ex.: 'https://brittech-proxy.onrender.com'
+  proxyUrl: 'https://brittech-proxy.duckdns.org', // ex.: 'https://brittech-proxy.duckdns.org'
   // Client ID do Google (OAuth 2.0) para a integração com o Google Drive
   // (ver CONFIG.md, seção "Google Drive"). Termina em
   // '.apps.googleusercontent.com'. O Client ID identifica o app no Google

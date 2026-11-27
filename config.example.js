@@ -29,7 +29,7 @@ window.BRITTECH_CONFIG = {
   // URL do proxy da Brittech Educação (Render ou Cloudflare Workers — ver
   // ../proxy/README.md). Com ela preenchida, o MVP chama o proxy em vez da
   // API direta. Deixe '' para usar a chamada direta (modo antigo).
-  proxyUrl: '', // ex.: 'https://brittech-proxy.onrender.com'
+  proxyUrl: '', // ex.: 'https://brittech-proxy.duckdns.org'
   // Client ID do Google (OAuth 2.0) para a integração com o Google Drive
   // (ver CONFIG.md, seção "Google Drive"). Deixe '' para configurar pelo
   // campo na aba "Planos e IA".
