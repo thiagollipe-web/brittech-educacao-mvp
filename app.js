@@ -38,7 +38,7 @@ var MARITACA_MODEL = PROVEDORES.maritaca.modelo;
 // Um acesso só, completo: o que muda é só a duração da assinatura.
 // Todas as durações têm os mesmos recursos e o mesmo limite de 100 planos/mês.
 var PLANOS = {
-  mensal:     { nome: 'Mensal', limite: 100, preco: 'R$ 29,90/mês' },
+  mensal:     { nome: 'Mensal', limite: 100, preco: 'R$ 19,90/mês' }, // promoção de lançamento, 100 primeiros; depois R$ 29,90/mês
   trimestral: { nome: 'Trimestral', limite: 100, preco: 'R$ 74,90 a cada 3 meses' },
   anual:      { nome: 'Anual', limite: 100, preco: 'R$ 299,00/ano' },
 };
@@ -413,8 +413,8 @@ function atualizarCamposIA() {
   if (desc) {
     var textos = {
       gemini: 'Gemini (Google) — modelo gemini-2.5-flash-lite. Atenção: nas contas do Thiago o nível gratuito não liberou cota (projeto “Brittech Educacao2a” avisa que o nível sem custo não está disponível) — pode ser preciso ativar faturamento no Google.',
-      deepseek: 'DeepSeek — modelo deepseek-chat. API paga por uso, bem barata (cerca de R$ 0,01 por plano de aula). É o provedor recomendado para começar.',
-      maritaca: 'Maritaca (brasileira, modelo Sabiá 4 Thinking, de raciocínio) — modelo sabia-4-thinking, ótimo em português e em documentos. Preço: R$ 5,00 de entrada e R$ 40,00 de saída por 1 milhão de tokens (cerca de R$ 0,13 por plano — bem mais caro que o S5, que custa R$ 0,50 / R$ 2,50).',
+      deepseek: 'DeepSeek — modelo deepseek-chat. API paga por uso, bem barata (cerca de R$ 0,01 por plano de aula). Atenção: o proxy ainda não tem chave do DeepSeek — para usá-lo, configure a sua chave abaixo (chamada direta do navegador).',
+      maritaca: 'Maritaca (brasileira, modelo Sabiá 4 Thinking, de raciocínio) — modelo sabia-4-thinking, ótimo em português e em documentos. É o provedor padrão: a chave já está no servidor do proxy, por isso a IA real já funciona sem você configurar nada. Preço: R$ 5,00 de entrada e R$ 40,00 de saída por 1 milhão de tokens (cerca de R$ 0,13 por plano — bem mais caro que o S5, que custa R$ 0,50 / R$ 2,50).',
     };
     desc.textContent = textos[provedorId] || '';
   }

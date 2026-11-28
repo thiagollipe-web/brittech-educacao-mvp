@@ -111,13 +111,15 @@ planos e documentações em modo demonstração — nunca trava.
 
 O proxy da Brittech Educação fica entre o MVP e a API: o navegador fala
 só com o proxy, e é o proxy (no servidor) que chama a Maritaca/DeepSeek/
-Gemini com a chave — que nunca sai do servidor. O deploy é no **Render,
-plano gratuito** (ver `../proxy/README.md` para o passo a passo).
+Gemini com a chave — que nunca sai do servidor. O proxy de produção está
+na **EC2 própria (https://brittech-proxy.duckdns.org)**, com a chave da
+**Maritaca** configurada no servidor (conferido em 28/11/2026) — por isso
+o MVP já abre com a IA real ativa, sem chave no navegador. DeepSeek e
+Gemini ainda não têm chave no servidor.
 
-1. Depois de criar o serviço no Render, copie a URL dele
-   (ex.: `https://brittech-proxy.onrender.com`).
-2. No MVP, aba **Planos e IA**, cole essa URL no campo **“URL do proxy da
-   Brittech Educação”** e clique em **Salvar URL do proxy** — ou preencha
+1. A URL do proxy já vem preenchida em `proxyUrl` no `config.js`.
+2. Para trocar a URL, no MVP, aba **Planos e IA**, cole a nova URL no campo
+   **“URL do proxy da Brittech Educação”** e clique em **Salvar URL do proxy** — ou preencha
    `proxyUrl` no `config.js`.
 3. O aviso no topo muda para **“IA real ativa via proxy”** — mesmo sem
    chave neste navegador. Teste com o botão **Testar conexão com a IA**.
@@ -125,10 +127,9 @@ plano gratuito** (ver `../proxy/README.md` para o passo a passo).
 Sem proxy configurado, o MVP mantém o comportamento antigo (chamada
 direta + fallback para o modo demonstração).
 
-> **Render gratuito “dorme”:** depois de ~15 minutos sem uso, o serviço
-> gratuito do Render desliga; a primeira chamada depois disso demora
-> ~30–60 s para “acordar” (o plano pode demorar um pouco na primeira
-> geração do dia). As chamadas seguintes são normais.
+> **EC2 própria (desde 26/11/2026):** o proxy não “dorme” — o servidor fica
+> ligado. Se uma chamada demorar ou falhar, confira o serviço na EC2
+> (`brittech-proxy.service`) antes de culpar a chave.
 
 ## 3c. Google Drive do professor (a IA usa os seus materiais)
 
@@ -322,7 +323,7 @@ um para ler e um para salvar.
 - **Histórico de planos na nuvem:** hoje os planos gerados não são salvos
   (só o contador mensal, no navegador). Salvar o histórico exige conta de
   usuário + banco de dados — fora do escopo do MVP.
-- **Servidor/proxy para as chaves:** pronto — ver `../proxy/` (deploy no
-  Render gratuito). Com o proxy configurado, as chaves ficam só no
+- **Servidor/proxy para as chaves:** pronto — ver `../proxy/` (deploy na
+  EC2 própria, https://brittech-proxy.duckdns.org, desde 26/11/2026). Com o proxy configurado, as chaves ficam só no
   servidor; a chave no navegador continua funcionando como modo de teste,
   mas o caminho de produção é o proxy.

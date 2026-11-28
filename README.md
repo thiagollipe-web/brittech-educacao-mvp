@@ -36,12 +36,13 @@ servidor estático, ex.: `python3 -m http.server` dentro de `mvp/`).
    `CONFIG.md`. Nenhuma chave foi criada, inventada ou gravada aqui.
    Atenção: DeepSeek e Maritaca podem bloquear chamadas diretas do
    navegador (CORS) — o caminho definitivo é o **proxy da Brittech
-   Educação** (`../proxy/`, deploy no Render gratuito): com a URL do
+   Educação** (`../proxy/`, deploy na EC2 própria
+   https://brittech-proxy.duckdns.org desde 26/11/2026): com a URL do
    proxy configurada (campo na aba “Planos e IA” ou `proxyUrl` no
    `config.js`), a chave fica só no servidor e o bloqueio some.
    Ver `CONFIG.md`, seção 3b.
 5. **Planos** (aba 4) — um acesso só, completo, em 3 durações: Mensal
-   R$ 29,90/mês, Trimestral R$ 74,90 a cada 3 meses, Anual R$ 299/ano.
+   R$ 19,90/mês na promoção de lançamento (100 primeiros; depois R$ 29,90/mês), Trimestral R$ 74,90 a cada 3 meses, Anual R$ 299/ano.
    Todas as durações têm os mesmos recursos e o mesmo limite de
    100 planos/mês. Contador mensal no topo (salvo no navegador); ao atingir
    o limite, a geração pausa até o próximo mês (não há upgrade que libere

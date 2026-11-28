@@ -19,12 +19,12 @@
 //   Gemini:   https://aistudio.google.com/apikey
 
 window.BRITTECH_CONFIG = {
-  provedor: 'deepseek', // provedor padrão ao abrir o MVP: 'deepseek', 'maritaca' ou 'gemini'
+  provedor: 'maritaca', // provedor padrão ao abrir o MVP: 'deepseek', 'maritaca' ou 'gemini'. Padrão é a Maritaca porque é a única com chave configurada no servidor do proxy (conferido em 28/11/2026) — assim o visitante novo já usa a IA real sem configurar chave. DeepSeek e Gemini pelo proxy exigem chave no servidor; com chave própria, funcionam pela chamada direta.
   deepseekApiKey: '',   // <-- sua chave do DeepSeek aqui (somente neste arquivo local)
   maritacaApiKey: '',   // <-- sua chave da Maritaca aqui
   geminiApiKey: '',     // <-- sua chave do Gemini aqui (somente neste arquivo local)
-  // URL do proxy da Brittech Educação (Render ou Cloudflare Workers — ver
-  // ../proxy/README.md). Com ela preenchida, o MVP chama o proxy em vez da
+  // URL do proxy da Brittech Educação (hoje na EC2 própria:
+  // https://brittech-proxy.duckdns.org). Com ela preenchida, o MVP chama o proxy em vez da
   // API direta: a chave fica só no servidor, nunca neste navegador, e o
   // bloqueio CORS some. Deixe '' para usar a chamada direta (modo antigo).
   proxyUrl: 'https://brittech-proxy.duckdns.org', // ex.: 'https://brittech-proxy.duckdns.org'

@@ -26,7 +26,7 @@
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "BRL",
-    "description": "Teste grátis do planejador. Assinaturas com acesso completo a partir de R$ 29,90/mês."
+    "description": "Teste grátis do planejador. Assinaturas com acesso completo a partir de R$ 19,90/mês na promoção de lançamento (100 primeiros; depois R$ 29,90/mês)."
   },
   "isPartOf": {
     "@type": "WebSite",
@@ -71,7 +71,7 @@
     <div class="hero-texto">
       <h2 id="brito-titulo">Oi, eu sou o Brito!</h2>
       <p id="brito-fala">Seu ajudante de planejamento. Escolha a etapa, o componente da BNCC e o tema — eu monto o plano de aula para você, do planejamento à prática.</p>
-      <p class="modo" id="modo-ia"><strong>Modo demonstração, sem IA real.</strong> Os planos são montados a partir de modelos por componente. Para ligar a IA real, escolha um provedor (Gemini, DeepSeek ou Maritaca) e configure sua chave na aba “Planos e IA” — veja o arquivo CONFIG.md.</p>
+      <p class="modo" id="modo-ia"><strong>IA real ativa via proxy (Maritaca Sabiá 4 Thinking).</strong> Os planos e as documentações são escritos sob medida pela IA — sem configurar chave. Para trocar de provedor, vá na aba “Planos e IA”.</p>
     </div>
     <figure class="hero-brito-figura">
       <img id="brito-img" src="assets/brito-v2-saudacao.png" alt="Brito, mascote do Brittech Educação, acenando" width="512" height="512">
@@ -370,7 +370,8 @@
     <div class="planos">
       <div class="cartao-plano" data-plano-card="mensal">
         <h3>Mensal</h3>
-        <p class="preco">R$ 29,90<span class="preco-sufixo">/mês</span></p>
+        <p class="preco">R$ 19,90<span class="preco-sufixo">/mês</span></p>
+        <p class="dica">Promoção de lançamento — 100 primeiros; depois R$ 29,90/mês. <a href="https://pay.kiwify.com.br/r3LXKZ6">Assinar por R$ 19,90/mês</a></p>
         <ul>
           <li><strong>100 planos de aula por mês</strong></li>
           <li>Todas as etapas e componentes da BNCC</li>
@@ -407,12 +408,12 @@
     <p class="dica">“IA com acesso ao seu Google Drive” está disponível em todas as durações: conecte o Drive na seção abaixo (precisa do Client ID do Google — passo a passo em CONFIG.md, seção “Google Drive”) e selecione os materiais que a IA deve usar como referência ao escrever o plano e as documentações.</p>
 
     <h2>Inteligência artificial real — escolha o provedor</h2>
-    <p>Sem chave, o MVP funciona em <strong>modo demonstração</strong>, montando o plano e as documentações a partir de modelos por componente. Com a chave de um provedor, o plano <strong>e</strong> as documentações passam a ser escritos sob medida pela IA. A chave fica só no seu navegador — nunca é enviada para nós nem salva em nenhum arquivo. Instruções completas no arquivo <code>CONFIG.md</code> desta pasta.</p>
-    <p class="dica">O Gemini não liberou cota gratuita nas contas do Thiago — por isso o provedor padrão é o <strong>DeepSeek</strong> (barato e sem burocracia). A <strong>Maritaca</strong> é brasileira, ótima em português e em documentos — é a melhor opção para reescrever as documentações.</p>
+    <p>Por padrão, o MVP já usa a <strong>IA real via proxy</strong> (Maritaca Sabiá 4 Thinking): o plano <strong>e</strong> as documentações são escritos sob medida pela IA, sem você configurar chave nenhuma — a chave fica só no servidor do proxy. Se preferir outro provedor (DeepSeek ou Gemini), escolha-o no seletor e configure a sua chave abaixo: ela fica só no seu navegador — nunca é enviada para nós nem salva em nenhum arquivo. Sem proxy e sem chave, o MVP cai para o <strong>modo demonstração</strong>, montando o plano e as documentações a partir de modelos por componente. Instruções completas no arquivo <code>CONFIG.md</code> desta pasta.</p>
+    <p class="dica">O provedor padrão é a <strong>Maritaca</strong> (brasileira, ótima em português e em documentos — é a melhor opção para reescrever as documentações), porque a chave dela já está no servidor do proxy. O Gemini não liberou cota gratuita nas contas do Thiago, e o proxy ainda não tem chave do DeepSeek — para usar um deles, configure a sua chave abaixo.</p>
     <label for="seletor-provedor">Provedor de IA</label>
     <select id="seletor-provedor">
-      <option value="deepseek">DeepSeek — deepseek-chat (recomendado para começar)</option>
-      <option value="maritaca">Maritaca — Sabiá 4 Thinking (raciocínio, melhor em português e documentos)</option>
+      <option value="deepseek">DeepSeek — deepseek-chat</option>
+      <option value="maritaca">Maritaca — Sabiá 4 Thinking (raciocínio, melhor em português e documentos — recomendado, já ativo via proxy)</option>
       <option value="gemini">Gemini — gemini-2.5-flash-lite (exige faturamento ativo no Google)</option>
     </select>
     <p class="dica" id="descricao-provedor"></p>
@@ -477,7 +478,7 @@
   </section>
 </main>
 
-<footer>Brittech Educação — MVP • Catálogo BNCC v1.0 • Assinaturas na Kiwify: Mensal R$ 29,90/mês, Trimestral R$ 74,90/3 meses (<a href="https://pay.kiwify.com.br/QrSvkxs">https://pay.kiwify.com.br/QrSvkxs</a>) e Anual R$ 299/ano cadastrados. Um acesso só, completo. Este MVP não altera nada na cobrança.<br>Conheça: <a href="https://thiagollipe-web.github.io/brittech-educacao/">Planos e site da Brittech Educação</a> · <a href="https://thiagollipe-web.github.io/brittech-educacao-aulas/">134 aulas prontas grátis</a> · <a href="https://thiagollipe-web.github.io/brittech-educacao-aulas/materiais-gratuitos/">Materiais gratuitos</a></footer>
+<footer>Brittech Educação — MVP • Catálogo BNCC v1.0 • Assinaturas na Kiwify: Mensal R$ 19,90/mês na promoção de lançamento — 100 primeiros (<a href="https://pay.kiwify.com.br/r3LXKZ6">https://pay.kiwify.com.br/r3LXKZ6</a>; depois R$ 29,90/mês), Trimestral R$ 74,90/3 meses (<a href="https://pay.kiwify.com.br/QrSvkxs">https://pay.kiwify.com.br/QrSvkxs</a>) e Anual R$ 299/ano cadastrados. Um acesso só, completo. Este MVP não altera nada na cobrança.<br>Conheça: <a href="https://thiagollipe-web.github.io/brittech-educacao/">Planos e site da Brittech Educação</a> · <a href="https://thiagollipe-web.github.io/brittech-educacao-aulas/">134 aulas prontas grátis</a> · <a href="https://thiagollipe-web.github.io/brittech-educacao-aulas/materiais-gratuitos/">Materiais gratuitos</a></footer>
 
 <!-- Área usada só na impressão de um documento ou do plano -->
 <div id="area-impressao" aria-hidden="true"></div>
