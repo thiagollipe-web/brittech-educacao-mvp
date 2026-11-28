@@ -490,5 +490,157 @@
 <script src="slides.js"></script>
 <script src="google.js"></script>
 <script src="agente.js"></script>
+<!-- ================================================================
+  Brittech Educação — Medição GA4 + aviso de cookies (LGPD)
+  ---------------------------------------------------------------
+  COMO LIGAR A MEDIÇÃO (só falta isto):
+  1. Criar a propriedade GA4 (passo a passo em analytics-snippet.html).
+  2. Trocar G-XXXXXXXXXX abaixo pelo Measurement ID real (ex.: G-ABC123DEF4)
+     em TODAS as páginas (vendas, ebook, links, MVP, biblioteca, acervo).
+  3. Publicar. Sem o ID real, NADA é medido; sem aceitar os cookies,
+     NADA dispara — banner e eventos já estão prontos e só aguardam o ID.
+  NÃO existe página de política de privacidade/cookies do site — por isso
+  o banner não traz link para política. Se uma for criada, acrescente o
+  link aqui no texto do banner.
+  ================================================================ -->
+<style>
+  #brittech-cookie-banner{position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;max-width:640px;margin:0 auto;background:#0A2540;color:#F5F1E8;border-radius:14px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;font-size:14px;line-height:1.45;display:flex;flex-direction:column;gap:10px}
+  #brittech-cookie-banner[hidden]{display:none!important}
+  #brittech-cookie-banner p{margin:0}
+  #brittech-cookie-banner .brittech-cookie-botoes{display:flex;gap:10px;flex-wrap:wrap}
+  #brittech-cookie-banner button{cursor:pointer;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;border:2px solid transparent}
+  #brittech-cookie-aceitar{background:#84CC16;color:#0A2540}
+  #brittech-cookie-recusar{background:transparent;color:#F5F1E8;border-color:#F5F1E8}
+  @media (max-width:480px){#brittech-cookie-banner{left:8px;right:8px;bottom:8px;font-size:13px}}
+</style>
+<div id="brittech-cookie-banner" role="dialog" aria-live="polite" aria-label="Aviso sobre cookies" hidden>
+  <p><strong>Usamos cookies para medir visitas.</strong> Usamos o Google Analytics para saber quantas pessoas visitam o site e o que funciona melhor. Sem o seu aceite, nada é medido e nenhum dado é enviado ao Google. Você pode recusar sem perder nada do site.</p>
+  <div class="brittech-cookie-botoes">
+    <button type="button" id="brittech-cookie-aceitar">Aceitar</button>
+    <button type="button" id="brittech-cookie-recusar">Recusar</button>
+  </div>
+</div>
+<script>
+(function () {
+  'use strict';
+  /* PREENCHER COM O G-... DA PROPRIEDADE GA4 — sem o ID real, nada é medido. */
+  var BRITTECH_GA_ID = 'G-XXXXXXXXXX';
+  var CONSENT_KEY = 'brittech-consent-v1';
+  var SALES_URL = 'https://thiagollipe-web.github.io/brittech-educacao/';
+
+  function hasRealId() {
+    return BRITTECH_GA_ID !== 'G-XXXXXXXXXX' && /^G-[A-Z0-9]{4,}$/.test(BRITTECH_GA_ID);
+  }
+  function storedDecision() {
+    try { return window.localStorage.getItem(CONSENT_KEY); } catch (e) { return null; }
+  }
+  function saveDecision(value) {
+    try { window.localStorage.setItem(CONSENT_KEY, value); } catch (e) {}
+  }
+
+  /* Stub do gtag (sem nenhuma requisição de rede): só enfileira chamadas.
+     O script do Google só é criado em loadGtag(), após aceite + ID real. */
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+  window.gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'analytics_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied'
+  });
+
+  window.__brittechGaReady = false;
+  function loadGtag() {
+    if (window.__brittechGaReady || !hasRealId()) return;
+    window.__brittechGaReady = true;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(BRITTECH_GA_ID);
+    s.onload = function () {
+      window.gtag('js', new Date());
+      window.gtag('consent', 'update', { 'analytics_storage': 'granted' });
+      window.gtag('config', BRITTECH_GA_ID);
+    };
+    document.head.appendChild(s);
+  }
+  function brittechEvent(name, params) {
+    if (!window.__brittechGaReady) return; /* sem aceite ou sem ID real: não dispara */
+    try { window.gtag('event', name, params || {}); } catch (e) {}
+  }
+  window.brittechEvent = brittechEvent;
+
+  /* Banner de cookies: aparece só enquanto não há decisão gravada. */
+  var banner = document.getElementById('brittech-cookie-banner');
+  var decision = storedDecision();
+  if (banner) {
+    if (!decision) { banner.hidden = false; }
+    var acceptBtn = document.getElementById('brittech-cookie-aceitar');
+    var refuseBtn = document.getElementById('brittech-cookie-recusar');
+    if (acceptBtn) acceptBtn.addEventListener('click', function () {
+      saveDecision('granted');
+      banner.hidden = true;
+      loadGtag();
+    });
+    if (refuseBtn) refuseBtn.addEventListener('click', function () {
+      saveDecision('denied');
+      banner.hidden = true;
+    });
+  }
+  if (decision === 'granted') { loadGtag(); }
+
+  /* Eventos — amarrados aos links/botões REAIS da página, por delegação
+     (nenhum botão ou link novo foi criado). Só disparam com GA carregado. */
+  function linkText(el) {
+    return (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+  }
+  var planosSection = document.getElementById('planos');
+  document.addEventListener('click', function (ev) {
+    var target = ev.target;
+    var el = (target && target.closest) ? target.closest('a, button') : null;
+    if (!el) return;
+    var href = el.getAttribute('href') || '';
+    if (href.indexOf('pay.kiwify.com.br') !== -1) {
+      brittechEvent('clique_checkout', { 'link_url': href, 'link_text': linkText(el) });
+      return;
+    }
+    if (href.indexOf('t.me/') !== -1) {
+      brittechEvent('clique_bot', { 'link_url': href, 'link_text': linkText(el) });
+      return;
+    }
+    if (href.indexOf('pnl-na-sala-de-aula.pdf') !== -1) {
+      brittechEvent('generate_lead', { 'method': 'download_direto', 'content_name': 'ebook_pnl_na_sala_de_aula' });
+      return;
+    }
+    if (el.getAttribute('data-aba') === 'planos') {
+      brittechEvent('ver_planos', { 'method': 'aba_planos_mvp' });
+      return;
+    }
+    if (el.classList && el.classList.contains('btn-plano')) {
+      brittechEvent('ver_planos', { 'method': 'botao_plano_mvp', 'plan': el.getAttribute('data-plano') || '' });
+      return;
+    }
+    /* Nas páginas sem seção de planos, o clique no link que leva à página
+       de vendas/planos conta como ver_planos. Na página de vendas, a seção
+       #planos existe e o evento vem da rolagem (abaixo), não do link. */
+    if (!planosSection && href === SALES_URL) {
+      brittechEvent('ver_planos', { 'method': 'link_para_pagina_de_planos' });
+    }
+  }, false);
+
+  /* ver_planos por rolagem — só na página de vendas (seção #planos). */
+  if (planosSection && 'IntersectionObserver' in window) {
+    var planosFired = false;
+    var observer = new IntersectionObserver(function (entries) {
+      if (!planosFired && entries[0].isIntersecting) {
+        planosFired = true;
+        brittechEvent('ver_planos', { 'method': 'rolagem_secao_planos' });
+        observer.disconnect();
+      }
+    }, { threshold: 0.4 });
+    observer.observe(planosSection);
+  }
+})();
+</script>
+
 </body>
 </html>

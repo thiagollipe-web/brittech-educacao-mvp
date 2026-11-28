@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Brittech Educação — Snippet GA4 + cookies (LGPD) — referência</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;max-width:820px;margin:0 auto;padding:24px 18px;line-height:1.55;color:#1a2a3a}
+  h1{font-size:1.4rem} h2{font-size:1.15rem;margin-top:2rem} code{background:#eef2f5;padding:1px 5px;border-radius:4px}
+  pre{background:#0A2540;color:#F5F1E8;padding:14px;border-radius:10px;overflow:auto;font-size:12px;line-height:1.45}
+  table{border-collapse:collapse;width:100%;font-size:.92rem} th,td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left;vertical-align:top}
+  .aviso{background:#fff7e0;border:1px solid #e8c547;border-radius:10px;padding:12px 14px}
+</style>
+</head>
+<body>
+<h1>Brittech Educação — Medição GA4 + aviso de cookies (LGPD)</h1>
+<p>Arquivo de referência. O mesmo bloco já está aplicado nas páginas abaixo; este arquivo existe só para documentar e para reaplicar o bloco quando for preciso.</p>
+
+<h2>1. Onde o bloco está</h2>
+<table>
+<tr><th>Página</th><th>Arquivo (repo)</th><th>Status</th></tr>
+<tr><td>Vendas</td><td>brittech-educacao / index.html</td><td><strong>NÃO aplicado</strong> — outra frente está editando o arquivo. Colar o bloco do item 2 imediatamente antes de <code>&lt;/body&gt;</code> quando ela terminar.</td></tr>
+<tr><td>Ebook PNL</td><td>brittech-educacao / ebook-pnl/index.html</td><td>Aplicado</td></tr>
+<tr><td>Links (bio)</td><td>brittech-educacao / links/index.html</td><td>Aplicado</td></tr>
+<tr><td>MVP (planejador)</td><td>brittech-educacao-mvp / index.html</td><td>Aplicado</td></tr>
+<tr><td>Biblioteca (134 aulas)</td><td>brittech-educacao-aulas / index.html</td><td>Aplicado</td></tr>
+<tr><td>Acervo (materiais gratuitos)</td><td>brittech-educacao-aulas / materiais-gratuitos/index.html</td><td>Aplicado</td></tr>
+</table>
+
+<h2>2. O bloco exato (colar antes de <code>&lt;/body&gt;</code>)</h2>
+<p>O bloco é autocontido: CSS do banner + HTML do banner + JavaScript. Não depende de nenhum outro arquivo e não altera nenhum botão ou link existente — os eventos são ligados por delegação aos links reais da página.</p>
+<pre>&lt;!-- ================================================================
+  Brittech Educação — Medição GA4 + aviso de cookies (LGPD)
+  ---------------------------------------------------------------
+  COMO LIGAR A MEDIÇÃO (só falta isto):
+  1. Criar a propriedade GA4 (passo a passo em analytics-snippet.html).
+  2. Trocar G-XXXXXXXXXX abaixo pelo Measurement ID real (ex.: G-ABC123DEF4)
+     em TODAS as páginas (vendas, ebook, links, MVP, biblioteca, acervo).
+  3. Publicar. Sem o ID real, NADA é medido; sem aceitar os cookies,
+     NADA dispara — banner e eventos já estão prontos e só aguardam o ID.
+  NÃO existe página de política de privacidade/cookies do site — por isso
+  o banner não traz link para política. Se uma for criada, acrescente o
+  link aqui no texto do banner.
+  ================================================================ --&gt;
+&lt;style&gt;
+  #brittech-cookie-banner{position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;max-width:640px;margin:0 auto;background:#0A2540;color:#F5F1E8;border-radius:14px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-family:system-ui,-apple-system,&#x27;Segoe UI&#x27;,Roboto,Arial,sans-serif;font-size:14px;line-height:1.45;display:flex;flex-direction:column;gap:10px}
+  #brittech-cookie-banner[hidden]{display:none!important}
+  #brittech-cookie-banner p{margin:0}
+  #brittech-cookie-banner .brittech-cookie-botoes{display:flex;gap:10px;flex-wrap:wrap}
+  #brittech-cookie-banner button{cursor:pointer;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:700;border:2px solid transparent}
+  #brittech-cookie-aceitar{background:#84CC16;color:#0A2540}
+  #brittech-cookie-recusar{background:transparent;color:#F5F1E8;border-color:#F5F1E8}
+  @media (max-width:480px){#brittech-cookie-banner{left:8px;right:8px;bottom:8px;font-size:13px}}
+&lt;/style&gt;
+&lt;div id=&quot;brittech-cookie-banner&quot; role=&quot;dialog&quot; aria-live=&quot;polite&quot; aria-label=&quot;Aviso sobre cookies&quot; hidden&gt;
+  &lt;p&gt;&lt;strong&gt;Usamos cookies para medir visitas.&lt;/strong&gt; Usamos o Google Analytics para saber quantas pessoas visitam o site e o que funciona melhor. Sem o seu aceite, nada é medido e nenhum dado é enviado ao Google. Você pode recusar sem perder nada do site.&lt;/p&gt;
+  &lt;div class=&quot;brittech-cookie-botoes&quot;&gt;
+    &lt;button type=&quot;button&quot; id=&quot;brittech-cookie-aceitar&quot;&gt;Aceitar&lt;/button&gt;
+    &lt;button type=&quot;button&quot; id=&quot;brittech-cookie-recusar&quot;&gt;Recusar&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;script&gt;
+(function () {
+  &#x27;use strict&#x27;;
+  /* PREENCHER COM O G-... DA PROPRIEDADE GA4 — sem o ID real, nada é medido. */
+  var BRITTECH_GA_ID = &#x27;G-XXXXXXXXXX&#x27;;
+  var CONSENT_KEY = &#x27;brittech-consent-v1&#x27;;
+  var SALES_URL = &#x27;https://thiagollipe-web.github.io/brittech-educacao/&#x27;;
+
+  function hasRealId() {
+    return BRITTECH_GA_ID !== &#x27;G-XXXXXXXXXX&#x27; &amp;&amp; /^G-[A-Z0-9]{4,}$/.test(BRITTECH_GA_ID);
+  }
+  function storedDecision() {
+    try { return window.localStorage.getItem(CONSENT_KEY); } catch (e) { return null; }
+  }
+  function saveDecision(value) {
+    try { window.localStorage.setItem(CONSENT_KEY, value); } catch (e) {}
+  }
+
+  /* Stub do gtag (sem nenhuma requisição de rede): só enfileira chamadas.
+     O script do Google só é criado em loadGtag(), após aceite + ID real. */
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+  window.gtag(&#x27;consent&#x27;, &#x27;default&#x27;, {
+    &#x27;ad_storage&#x27;: &#x27;denied&#x27;,
+    &#x27;analytics_storage&#x27;: &#x27;denied&#x27;,
+    &#x27;ad_user_data&#x27;: &#x27;denied&#x27;,
+    &#x27;ad_personalization&#x27;: &#x27;denied&#x27;
+  });
+
+  window.__brittechGaReady = false;
+  function loadGtag() {
+    if (window.__brittechGaReady || !hasRealId()) return;
+    window.__brittechGaReady = true;
+    var s = document.createElement(&#x27;script&#x27;);
+    s.async = true;
+    s.src = &#x27;https://www.googletagmanager.com/gtag/js?id=&#x27; + encodeURIComponent(BRITTECH_GA_ID);
+    s.onload = function () {
+      window.gtag(&#x27;js&#x27;, new Date());
+      window.gtag(&#x27;consent&#x27;, &#x27;update&#x27;, { &#x27;analytics_storage&#x27;: &#x27;granted&#x27; });
+      window.gtag(&#x27;config&#x27;, BRITTECH_GA_ID);
+    };
+    document.head.appendChild(s);
+  }
+  function brittechEvent(name, params) {
+    if (!window.__brittechGaReady) return; /* sem aceite ou sem ID real: não dispara */
+    try { window.gtag(&#x27;event&#x27;, name, params || {}); } catch (e) {}
+  }
+  window.brittechEvent = brittechEvent;
+
+  /* Banner de cookies: aparece só enquanto não há decisão gravada. */
+  var banner = document.getElementById(&#x27;brittech-cookie-banner&#x27;);
+  var decision = storedDecision();
+  if (banner) {
+    if (!decision) { banner.hidden = false; }
+    var acceptBtn = document.getElementById(&#x27;brittech-cookie-aceitar&#x27;);
+    var refuseBtn = document.getElementById(&#x27;brittech-cookie-recusar&#x27;);
+    if (acceptBtn) acceptBtn.addEventListener(&#x27;click&#x27;, function () {
+      saveDecision(&#x27;granted&#x27;);
+      banner.hidden = true;
+      loadGtag();
+    });
+    if (refuseBtn) refuseBtn.addEventListener(&#x27;click&#x27;, function () {
+      saveDecision(&#x27;denied&#x27;);
+      banner.hidden = true;
+    });
+  }
+  if (decision === &#x27;granted&#x27;) { loadGtag(); }
+
+  /* Eventos — amarrados aos links/botões REAIS da página, por delegação
+     (nenhum botão ou link novo foi criado). Só disparam com GA carregado. */
+  function linkText(el) {
+    return (el.textContent || &#x27;&#x27;).replace(/\s+/g, &#x27; &#x27;).trim().slice(0, 80);
+  }
+  var planosSection = document.getElementById(&#x27;planos&#x27;);
+  document.addEventListener(&#x27;click&#x27;, function (ev) {
+    var target = ev.target;
+    var el = (target &amp;&amp; target.closest) ? target.closest(&#x27;a, button&#x27;) : null;
+    if (!el) return;
+    var href = el.getAttribute(&#x27;href&#x27;) || &#x27;&#x27;;
+    if (href.indexOf(&#x27;pay.kiwify.com.br&#x27;) !== -1) {
+      brittechEvent(&#x27;clique_checkout&#x27;, { &#x27;link_url&#x27;: href, &#x27;link_text&#x27;: linkText(el) });
+      return;
+    }
+    if (href.indexOf(&#x27;t.me/&#x27;) !== -1) {
+      brittechEvent(&#x27;clique_bot&#x27;, { &#x27;link_url&#x27;: href, &#x27;link_text&#x27;: linkText(el) });
+      return;
+    }
+    if (href.indexOf(&#x27;pnl-na-sala-de-aula.pdf&#x27;) !== -1) {
+      brittechEvent(&#x27;generate_lead&#x27;, { &#x27;method&#x27;: &#x27;download_direto&#x27;, &#x27;content_name&#x27;: &#x27;ebook_pnl_na_sala_de_aula&#x27; });
+      return;
+    }
+    if (el.getAttribute(&#x27;data-aba&#x27;) === &#x27;planos&#x27;) {
+      brittechEvent(&#x27;ver_planos&#x27;, { &#x27;method&#x27;: &#x27;aba_planos_mvp&#x27; });
+      return;
+    }
+    if (el.classList &amp;&amp; el.classList.contains(&#x27;btn-plano&#x27;)) {
+      brittechEvent(&#x27;ver_planos&#x27;, { &#x27;method&#x27;: &#x27;botao_plano_mvp&#x27;, &#x27;plan&#x27;: el.getAttribute(&#x27;data-plano&#x27;) || &#x27;&#x27; });
+      return;
+    }
+    /* Nas páginas sem seção de planos, o clique no link que leva à página
+       de vendas/planos conta como ver_planos. Na página de vendas, a seção
+       #planos existe e o evento vem da rolagem (abaixo), não do link. */
+    if (!planosSection &amp;&amp; href === SALES_URL) {
+      brittechEvent(&#x27;ver_planos&#x27;, { &#x27;method&#x27;: &#x27;link_para_pagina_de_planos&#x27; });
+    }
+  }, false);
+
+  /* ver_planos por rolagem — só na página de vendas (seção #planos). */
+  if (planosSection &amp;&amp; &#x27;IntersectionObserver&#x27; in window) {
+    var planosFired = false;
+    var observer = new IntersectionObserver(function (entries) {
+      if (!planosFired &amp;&amp; entries[0].isIntersecting) {
+        planosFired = true;
+        brittechEvent(&#x27;ver_planos&#x27;, { &#x27;method&#x27;: &#x27;rolagem_secao_planos&#x27; });
+        observer.disconnect();
+      }
+    }, { threshold: 0.4 });
+    observer.observe(planosSection);
+  }
+})();
+&lt;/script&gt;
+</pre>
+
+<h2>3. Como ligar a medição — criar a propriedade GA4</h2>
+<p>Fazer com login no Google Analytics, na conta <strong>thiagollipe@gmail.com</strong>. Não custa nada; não criar conta de Google Ads.</p>
+<ol>
+<li>Abrir <code>https://analytics.google.com</code> e entrar com thiagollipe@gmail.com.</li>
+<li><strong>Admin</strong> (engrenagem, canto inferior esquerdo) → <strong>Criar</strong> → <strong>Propriedade</strong>.</li>
+<li>Nome da propriedade: <code>Brittech Educação</code>. Fuso horário: <code>(GMT-03:00) Horário de Brasília</code>. Moeda: <code>Real brasileiro (BRL)</code>. Avançar.</li>
+<li>Detalhes da empresa: setor <code>Educação</code>, tamanho <code>Pequena (1 a 10 funcionários)</code>; marcar os usos pretendidos (ex.: “Medir o engajamento” e “Gerar leads”). Criar e aceitar os termos.</li>
+<li>Criar o fluxo de dados: <strong>Web</strong>. URL do site: <code>thiagollipe-web.github.io</code>. Nome do fluxo: <code>Brittech Educação — site principal</code>. Criar.</li>
+<li>Copiar o <strong>ID de medição</strong> exibido (formato <code>G-XXXXXXXXXX</code>).</li>
+<li><strong>Usar UM só ID em todas as páginas.</strong> Todas as páginas estão no mesmo host (<code>thiagollipe-web.github.io</code>) e o GA4 distingue os sites pelo caminho da página (<code>/brittech-educacao/</code>, <code>/brittech-educacao-mvp/</code>, <code>/brittech-educacao-aulas/</code>). Um único fluxo basta; fluxos separados só seriam necessários para separar os dados por site.</li>
+<li>Em cada um dos 6 arquivos do item 1, trocar <code>G-XXXXXXXXXX</code> pelo ID real (são 3 ocorrências por arquivo: 1 no comentário de instrução e 2 no código — trocar as 3, ou pelo menos as 2 do código). Publicar os arquivos.</li>
+<li>Conferir: no GA4, abrir <strong>Relatórios → Tempo real</strong> e visitar as páginas aceitando os cookies. A visita deve aparecer em até ~1 minuto. Para testar sem sujar os dados, usar <strong>Configurar → DebugView</strong> com a extensão Google Analytics Debugger.</li>
+</ol>
+<p class="aviso"><strong>Sem o ID real, nada é medido — e isso é proposital.</strong> Com o placeholder <code>G-XXXXXXXXXX</code>, o carregador nem cria a requisição ao Google. Sem aceitar os cookies, também nada dispara. O banner aparece mesmo sem o ID, para o consentimento já funcionar desde já.</p>
+
+<h2>4. Como o consentimento funciona</h2>
+<ul>
+<li>Na primeira visita, o banner aparece no rodapé. <strong>Aceitar</strong> grava <code>brittech-consent-v1 = granted</code> no navegador e carrega o gtag.js; <strong>Recusar</strong> grava <code>denied</code> e nunca carrega nada do Google.</li>
+<li>Enquanto não há decisão, nenhuma requisição vai para <code>googletagmanager.com</code> nem para <code>google-analytics.com</code>. O código do gtag só existe como função local (stub) até o aceite.</li>
+<li>Depois da decisão, o banner some e não volta. Para mudar a escolha, é preciso limpar os dados do site no navegador (ainda não há botão “rever cookies” nem página de política — ver item 6).</li>
+<li>O banner é fixo no rodapé, some após a escolha e não empurra o conteúdo — não cobre CTAs de forma permanente.</li>
+</ul>
+
+<h2>5. Eventos implementados (só após consentimento)</h2>
+<table>
+<tr><th>Evento</th><th>Quando dispara</th><th>Por página</th></tr>
+<tr><td><code>page_view</code></td><td>Automático do GA4 (<code>gtag('config')</code>)</td><td>Todas, após aceite + ID real</td></tr>
+<tr><td><code>ver_planos</code></td><td>Rolagem até a seção de planos; ou clique que leva aos planos</td><td>Vendas: rolagem na seção <code>#planos</code>. MVP: abrir a aba “Planos e IA” ou clicar em “Usar Mensal/Trimestral/Anual”. Ebook, Links, Biblioteca e Acervo: clique no link que leva à página de vendas/planos.</td></tr>
+<tr><td><code>clique_checkout</code></td><td>Clique em qualquer link <code>pay.kiwify.com.br</code></td><td>Vendas (12 links), Ebook (1 link da promoção R$ 19,90), MVP (2 links: promoção Mensal e rodapé Trimestral). Links, Biblioteca e Acervo: <strong>não há</strong> link de checkout — nada implementado.</td></tr>
+<tr><td><code>generate_lead</code></td><td>Clique no download do ebook (PDF)</td><td>Ebook (3 botões de download). Nas demais páginas: <strong>não há</strong> download de ebook — nada implementado. O evento registra <code>method=download_direto</code>: hoje NÃO há captura de e-mail (ver item 7).</td></tr>
+<tr><td><code>clique_bot</code></td><td>Clique no link do Telegram <code>t.me/brito_edu_bot</code></td><td>Vendas (seção do Brito) e Links. Ebook, MVP, Biblioteca e Acervo: <strong>não há</strong> link do Telegram — nada implementado (não foram criados botões novos).</td></tr>
+</table>
+
+<h2>6. O que falta (não inventado)</h2>
+<ul>
+<li><strong>Página de política de privacidade/cookies:</strong> não existe. O banner não traz link para política por esse motivo. Quando existir, acrescentar o link no texto do banner.</li>
+<li><strong>Botão “rever escolha de cookies”:</strong> não existe; a mudança de escolha hoje exige limpar os dados do site no navegador.</li>
+<li><strong>Google Ads:</strong> nada criado e nada ligado. O snippet usa só o GA4 (<code>gtag.js</code>); nenhuma tag de remarketing foi instalada.</li>
+</ul>
+
+<h2>7. Ebook — captura de e-mail (opções para decidir)</h2>
+<p>Estado atual, conferido na página: <strong>sem cadastro, sem e-mail — o PDF abre direto</strong> (3 botões de download, nenhum campo). Nenhuma captura foi construída e nenhum backend foi criado. Opções reais:</p>
+<table>
+<tr><th>Opção</th><th>Prós</th><th>Contras</th><th>O que exige</th></tr>
+<tr><td><strong>(a) Google Forms gratuito</strong> (recomendado para começar)</td><td>Grátis; sem backend; respostas vão direto para uma planilha do Thiago; pode embutir na página ou linkar.</td><td>Experiência com um passo a mais (preencher antes de baixar); precisa checar LGPD no texto do formulário; o e-mail não é validado de verdade.</td><td>Thiago criar o Forms (nome + e-mail, com aviso LGPD) e informar o ID; depois colar o embed do item 8 no lugar do download direto.</td></tr>
+<tr><td><strong>(b) Entrega via Kiwify</strong></td><td>Checkout da Kiwify já coleta o e-mail de quem compra; lista de clientes centralizada.</td><td><strong>A confirmar:</strong> não foi possível confirmar se a Kiwify oferece produto gratuito / captura de lead sem cobrança. As fontes consultadas falam de checkout pago e de integrações com e-mail marketing, não de entrega grátis com captura. Se a Kiwify não tiver essa opção, a entrega grátis por ela exigiria um produto pago de R$ 0 ou similar — a confirmar dentro do painel da Kiwify.</td><td>Thiago (ou agente com acesso) verificar no painel da Kiwify se existe cadastro de produto gratuito / captura de lead.</td></tr>
+<tr><td><strong>(c) Manter o download direto</strong></td><td>Zero fricção: é o que a página já promete (“sem cadastro, sem e-mail”); maior taxa de download.</td><td>Nenhum e-mail capturado; o ebook não gera lista; o <code>generate_lead</code> mede só downloads, não leads.</td><td>Nada. É o estado atual.</td></tr>
+</table>
+
+<h2>8. Embed do Google Forms (pronto para ligar — NÃO ligado)</h2>
+<p>Usar somente se a opção (a) for escolhida. Criar o Forms, copiar o ID do endereço de incorporação e substituir <code>FORM_ID_AQUI</code>. O iframe só deve entrar na página do ebook depois da decisão do Thiago.</p>
+<pre>&lt;!-- Captura de e-mail do ebook (Google Forms) — LIGAR SÓ APÓS DECISÃO --&gt;
+&lt;iframe src="https://docs.google.com/forms/d/e/FORM_ID_AQUI/viewform?embedded=true"
+  width="100%" height="520" frameborder="0" marginheight="0" marginwidth="0"
+  title="Receba o ebook PNL na Sala de Aula por e-mail"&gt;Carregando…&lt;/iframe&gt;
+&lt;p&gt;Depois de enviar, o link do PDF aparece na mensagem de confirmação do formulário.&lt;/p&gt;</pre>
+<p>Regra ao ligar: o download direto continua existindo na página até o Forms estar testado; o evento <code>generate_lead</code> passa a valer também para o envio do formulário (o disparo do iframe é medido pelo GA4 como <code>generate_lead</code> via o clique no botão de envio — a implementar na hora, junto com o teste).</p>
+
+<h2>9. Como verificar sem aceitar (nenhuma requisição ao Google)</h2>
+<ol>
+<li>Abrir a página com o console de rede do navegador (aba Rede/Network).</li>
+<li>Antes de clicar em “Aceitar”, filtrar por <code>googletagmanager</code> e por <code>google-analytics</code>: <strong>não deve aparecer nenhuma requisição</strong>. O único <code>googletagmanager</code> existente está dentro da função <code>loadGtag()</code>, que só roda após aceite + ID real — conferir por leitura de código: o script é criado com <code>document.createElement('script')</code> dentro dessa função.</li>
+<li>Clicar em “Recusar”: o banner some e continua sem nenhuma requisição ao Google.</li>
+<li>Depois de preencher o ID real, clicar em “Aceitar” e conferir que aparece a requisição <code>gtag/js?id=G-...</code> e que a visita aparece no Tempo real do GA4.</li>
+</ol>
+</body>
+</html>
